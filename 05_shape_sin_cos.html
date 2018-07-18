@@ -35,6 +35,10 @@
     this.groupScale = new THREE.Vector3(0.3, 0.7, 0.3);
 
     this.initialGroupGroupScale = new THREE.Vector3(1.0, 1.0, 1.0);
+    this.groupGroupLengthMax = 100;
+    this.groupGroupRadius = 30.0;
+    this.groupGroupChildrenLength = 9;
+
 
   }
   var settings = new Settings();
@@ -149,22 +153,33 @@
     guiFolderGroup.open();
 
     // groupGroup
-    var ARRAY_NUM = 9;
-    var THETA = Math.PI * 2 / ARRAY_NUM;
-    var RADIUS = 30.0;
-    for (var i = 0; i < ARRAY_NUM; i++){
-      var theta = THETA * i;
-      var groupClone = group.clone();
-      groupClone.position.set(Math.cos(theta) * RADIUS, 0, Math.sin(theta) * RADIUS);
-      groupGroup.add(groupClone);
+    function initiGroupGroup(){
+      var THETA = Math.PI * 2 / settings.groupGroupChildrenLength;
+      for (var i = 0; i < settings.groupGroupChildrenLength; i++){
+        var theta = THETA * i;
+        var groupClone = group.clone();
+        groupClone.position.set(Math.cos(theta) * settings.groupGroupRadius, 0, Math.sin(theta) * settings.groupGroupRadius);
+        groupGroup.add(groupClone);
+      }
+      groupGroup.scale.copy(settings.initialGroupGroupScale);
     }
-    groupGroup.scale.copy(settings.initialGroupGroupScale);
+
+    function updateGroupGroup(){
+      for (var i = groupGroup.children.length - 1; i >= 0 ; i--){
+        groupGroup.remove(groupGroup.children[i]);
+      }
+      initiGroupGroup();
+    }
+
+    initiGroupGroup();
 
     // - group
     var guiFolderGroupGroup = gui.addFolder('groupGroup');
     guiFolderGroupGroup.add(groupGroup.scale, 'x').name('scale.x');
     guiFolderGroupGroup.add(groupGroup.scale, 'y').name('scale.y');
     guiFolderGroupGroup.add(groupGroup.scale, 'z').name('scale.z');
+    guiFolderGroupGroup.add(settings, 'groupGroupChildrenLength', 0, settings.groupGroupLengthMax).name('length').step(1).onChange(updateGroupGroup);
+    guiFolderGroupGroup.add(settings, 'groupGroupRadius', 0, 100).onChange(updateGroupGroup);
     guiFolderGroupGroup.open();
 
     // light
