@@ -226,7 +226,7 @@
     loaderOBJ.load(
       '/model/bunny.obj',
       function (groupOBJ) {
-        groupOBJ.position.set(-20, -5, 0);
+        groupOBJ.position.copy(sphereMesh.position);
         groupOBJ.scale.set(7, 7, 7);
         scene.add(groupOBJ);
 
@@ -237,6 +237,14 @@
         groupOBJ.children.forEach(function(mesh) {
           mesh.material = group.children[0].material;
         });
+
+        guiFolderGroupOBJ.add(groupOBJ.position, 'x').name('position.x');
+        guiFolderGroupOBJ.add(groupOBJ.position, 'y').name('position.y');
+        guiFolderGroupOBJ.add(groupOBJ.position, 'z').name('position.z');;
+        guiFolderGroupOBJ.add(groupOBJ.scale, 'x').name('scale.x');
+        guiFolderGroupOBJ.add(groupOBJ.scale, 'y').name('scale.y');
+        guiFolderGroupOBJ.add(groupOBJ.scale, 'z').name('scale.z');;
+
       }
     );
 
