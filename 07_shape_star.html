@@ -32,6 +32,7 @@
   var settings = new Settings();
   var scene, camera, renderer;
   var controls;
+  var starLine;
 
   init();
   animate();
@@ -68,37 +69,51 @@
     controls.zoomSpeed = 0.5; // default is 1
 
     // star
-    var starLineMaterial = new THREE.LineBasicMaterial({
-      color: settings.starLineMaterialColor
-    });
+    initStarLine();
 
-    var starLineGeometry = new THREE.Geometry();
-
-    var R;  //半径の変数
-    var x;
-    var y;
-
-    for (var i = 0; i < settings.starLineVerticesLength; i++) {
-      if (i % 2 == 0) {
-        R = settings.starLineRadiusOut; //頂点が偶数の場合
-      } else {
-        R = settings.starLineRadiusIn; //頂点が奇数の場合
-      }
-      x = R * Math.cos(Math.PI * 2 / settings.starLineVerticesLength * i);　//x座標取得　radians( );ラジアンを度に変換
-      y = R * Math.sin(Math.PI * 2 / settings.starLineVerticesLength * i);　//y座標取得　radians( );ラジアンを度に変換
-      starLineGeometry.vertices.push(new THREE.Vector3(x, y, 0));
-    }
-    starLineGeometry.vertices.push(starLineGeometry.vertices[0]);
-
-    var starLine = new THREE.Line(starLineGeometry, starLineMaterial);
-    starLine.rotateZ(Math.PI / 2.0);
-
-    scene.add(starLine);
     // - gui
     var guiFolderStarLine = gui.addFolder('Star')
     guiFolderStarLine.addColor(settings, 'starLineMaterialColor').onChange(function(color){
       starLineMaterial.color.setStyle(color);
     });
+    guiFolderStarLine.add(settings, 'starLineVerticesLength', 2, 100).onChange(updateStarLine);
+
+    function initStarLine(){
+      var starLineMaterial = new THREE.LineBasicMaterial({
+        color: settings.starLineMaterialColor
+      });
+
+      var starLineGeometry = new THREE.Geometry();
+
+      var R;  //半径の変数
+      var x;
+      var y;
+
+      for (var i = 0; i < settings.starLineVerticesLength; i++) {
+        if (i % 2 == 0) {
+          R = settings.starLineRadiusOut; //頂点が偶数の場合
+        } else {
+          R = settings.starLineRadiusIn; //頂点が奇数の場合
+        }
+        x = R * Math.cos(Math.PI * 2 / settings.starLineVerticesLength * i);　//x座標取得　radians( );ラジアンを度に変換
+        y = R * Math.sin(Math.PI * 2 / settings.starLineVerticesLength * i);　//y座標取得　radians( );ラジアンを度に変換
+        starLineGeometry.vertices.push(new THREE.Vector3(x, y, 0));
+      }
+      starLineGeometry.vertices.push(starLineGeometry.vertices[0]);
+
+      starLine = new THREE.Line(starLineGeometry, starLineMaterial);
+      starLine.rotateZ(Math.PI / 2.0);
+
+      scene.add(starLine);
+    }
+
+    function updateStarLine(){
+      scene.remove(starLine);
+      starLine.geometry.dispose();
+      starLine.material.dispose();
+
+      initStarLine();
+    }
     guiFolderStarLine.open();
 
 
