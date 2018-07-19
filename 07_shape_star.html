@@ -21,6 +21,9 @@
 
   var Settings = function(){
     this.starLineMaterialColor = "#ffaa00";
+    this.starLineSpokeRatio = 0.382; //スポーク比の設定
+    this.starLineRadiusOut = 20; //外側の円の半径のサイズ
+    this.starLineRadiusIn = this.starLineRadiusOut * this.starLineSpokeRatio;
 
     // initial value
     this.initialCameraPositionZ = 30;
@@ -72,17 +75,15 @@
 
     var n = 10; //頂点数
     var R;  //半径の変数
-    var radiusOut = 20;　//外側の円の半径のサイズ
-    var radiusIn = radiusOut * 0.382; //スポーク比の設定
 
     var x;
     var y;
 
     for (var i = 0; i < n; i++) {
       if (i % 2 == 0) {
-        R = radiusOut;　//頂点が偶数の場合
+        R = settings.starLineRadiusOut; //頂点が偶数の場合
       } else {
-        R = radiusIn; //頂点が奇数の場合
+        R = settings.starLineRadiusIn; //頂点が奇数の場合
       }
       x = R * Math.cos(Math.PI * 2 / n * i);　//x座標取得　radians( );ラジアンを度に変換
       y = R * Math.sin(Math.PI * 2 / n * i);　//y座標取得　radians( );ラジアンを度に変換
