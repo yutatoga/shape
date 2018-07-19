@@ -72,17 +72,17 @@
 
     var n = 10; //頂点数
     var R;  //半径の変数
-    var r_out = 20;　//外側の円の半径のサイズ
-    var r_in = r_out * 0.382; //スポーク比の設定
+    var radiusOut = 20;　//外側の円の半径のサイズ
+    var radiusIn = radiusOut * 0.382; //スポーク比の設定
 
     var x;
     var y;
 
     for (var i = 0; i < n; i++) {
       if (i % 2 == 0) {
-        R = r_out;　//頂点が偶数の場合
+        R = radiusOut;　//頂点が偶数の場合
       } else {
-        R = r_in; //頂点が奇数の場合
+        R = radiusIn; //頂点が奇数の場合
       }
       x = R * Math.cos(Math.PI * 2 / n * i);　//x座標取得　radians( );ラジアンを度に変換
       y = R * Math.sin(Math.PI * 2 / n * i);　//y座標取得　radians( );ラジアンを度に変換
