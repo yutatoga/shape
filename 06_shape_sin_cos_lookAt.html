@@ -12,6 +12,8 @@
   </style>
 </head>
 <body>
+  <div id="containerStats"></div>
+
   <script type="text/javascript" src="/js/three.js"></script>
   <script type="text/javascript" src="/js/dat.gui.js"></script>
   <script type="text/javascript" src="/js/OrbitControls.js"></script>
@@ -41,6 +43,7 @@
 
     this.spherePosition = new THREE.Vector3(0, 30, 0);
 
+    this.showStats = true;
   }
 
   var settings = new Settings();
@@ -267,7 +270,19 @@
 
     stats = new Stats();
     stats.showPanel(0);
-    document.body.appendChild(stats.dom);
+    document.getElementById('containerStats').appendChild(stats.dom);
+
+    // - gui
+    var guiFolderDebug = gui.addFolder('Debug');
+    guiFolderDebug.add(axesHelper, 'visible').name('axesHelper.visible');
+    guiFolderDebug.add(settings, 'showStats').onChange(function(enableDebug){
+      if(enableDebug){
+        document.getElementById("containerStats").style.display = "inline";
+      }else{
+        document.getElementById("containerStats").style.display = "none";
+      }
+    });
+    guiFolderDebug.open();
   }
 
   function animate() {
