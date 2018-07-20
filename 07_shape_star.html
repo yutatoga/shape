@@ -74,7 +74,7 @@
     // - gui
     var guiFolderStarLine = gui.addFolder('Star')
     guiFolderStarLine.addColor(settings, 'starLineMaterialColor').onChange(function(color){
-      starLineMaterial.color.setStyle(color);
+      starLine.material.color.setStyle(color);
     });
     guiFolderStarLine.add(settings, 'starLineVerticesLength', 2, 100).onChange(updateStarLine);
 
