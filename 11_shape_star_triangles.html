@@ -55,6 +55,7 @@
   var scene, camera, renderer;
   var controls;
   var starLine, ellipseInLine, ellipseOutLine;
+  var trianglesMeshGroup;
   var labelGroup;
 
   init();
@@ -207,81 +208,57 @@
       ellipseOutLine.geometry.dispose();
       ellipseOutLine.material.dispose();
 
+      trianglesMeshGroup.remove(trianglesMesh);
+      trianglesMesh.geometry.dispose();
+      trianglesMesh.material.dispose();
+
+      trianglesMeshGroup.remove(trianglesWireframeMesh);
+      trianglesWireframeMesh.geometry.dispose();
+      trianglesWireframeMesh.material.dispose();
+
       for (var i = labelGroup.children.length - 1; i >= 0 ; i--){
         labelGroup.remove(labelGroup.children[i]);
       }
 
       initStarLine();
+      initTrianglesMeshGroup();
     }
 
     guiFolderStarLine.open();
 
-    var trianglesBufferGeometry = new THREE.BufferGeometry();
-    var trianglesPositions = [
+    // trianglesMesh
+    trianglesMeshGroup = new THREE.Group();
+    trianglesMeshGroup.rotateZ(Math.PI / 2.0);
+    scene.add(trianglesMeshGroup);
 
-      0, 0, 0,                                                                                            // origin
-      starLine.geometry.vertices[0].x, starLine.geometry.vertices[0].y, starLine.geometry.vertices[0].z,  // 0
-      starLine.geometry.vertices[1].x, starLine.geometry.vertices[1].y, starLine.geometry.vertices[1].z,  // 1
 
-      0, 0, 0,                                                                                            // origin
-      starLine.geometry.vertices[1].x, starLine.geometry.vertices[1].y, starLine.geometry.vertices[1].z,  // 1
-      starLine.geometry.vertices[2].x, starLine.geometry.vertices[2].y, starLine.geometry.vertices[2].z,  // 2
+    function initTrianglesMeshGroup(){
+      var trianglesBufferGeometry = new THREE.BufferGeometry();
+      var trianglesPositions = [];
+      for (var i = 0; i < starLine.geometry.vertices.length; i++){
+        trianglesPositions.push(0, 0, 0); // origin
+        trianglesPositions.push(starLine.geometry.vertices[i].x, starLine.geometry.vertices[i].y, starLine.geometry.vertices[i].z);
+        trianglesPositions.push(starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].x, starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].y, starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].z);
+      }
 
-      0, 0, 0,                                                                                            // origin
-      starLine.geometry.vertices[2].x, starLine.geometry.vertices[2].y, starLine.geometry.vertices[2].z,  // 2
-      starLine.geometry.vertices[3].x, starLine.geometry.vertices[3].y, starLine.geometry.vertices[3].z,  // 3
+      trianglesBufferGeometry.addAttribute('position', new THREE.Float32BufferAttribute(trianglesPositions, 3));
+      var trianglesMaterial = new THREE.MeshNormalMaterial();
+      var trianglesMaterial = new THREE.MeshBasicMaterial( {
+        color: 0x0000fff,
+        side: THREE.DoubleSide
+      } );
+      trianglesMesh = new THREE.Mesh(trianglesBufferGeometry, trianglesMaterial);
+      trianglesMeshGroup.add(trianglesMesh)
 
-      0, 0, 0,                                                                                            // origin
-      starLine.geometry.vertices[3].x, starLine.geometry.vertices[3].y, starLine.geometry.vertices[3].z,  // 3
-      starLine.geometry.vertices[4].x, starLine.geometry.vertices[4].y, starLine.geometry.vertices[4].z,  // 4
+      var trianglesWireframeMaterial = new THREE.MeshBasicMaterial( {
+        color: 0xfffffff,
+        wireframe: true,
+      } );
+      trianglesWireframeMesh = new THREE.Mesh(trianglesBufferGeometry, trianglesWireframeMaterial);
+      trianglesMeshGroup.add(trianglesWireframeMesh)
+    }
 
-      0, 0, 0,                                                                                            // origin
-      starLine.geometry.vertices[4].x, starLine.geometry.vertices[4].y, starLine.geometry.vertices[4].z,  // 4
-      starLine.geometry.vertices[5].x, starLine.geometry.vertices[5].y, starLine.geometry.vertices[5].z,  // 5
-
-      0, 0, 0,                                                                                            // origin
-      starLine.geometry.vertices[5].x, starLine.geometry.vertices[5].y, starLine.geometry.vertices[5].z,  // 5
-      starLine.geometry.vertices[6].x, starLine.geometry.vertices[6].y, starLine.geometry.vertices[6].z,  // 6
-
-      0, 0, 0,                                                                                            // origin
-      starLine.geometry.vertices[6].x, starLine.geometry.vertices[6].y, starLine.geometry.vertices[6].z,  // 6
-      starLine.geometry.vertices[7].x, starLine.geometry.vertices[7].y, starLine.geometry.vertices[7].z,  // 7
-
-      0, 0, 0,                                                                                            // origin
-      starLine.geometry.vertices[7].x, starLine.geometry.vertices[7].y, starLine.geometry.vertices[7].z,  // 7
-      starLine.geometry.vertices[8].x, starLine.geometry.vertices[8].y, starLine.geometry.vertices[8].z,  // 8
-
-      0, 0, 0,                                                                                            // origin
-      starLine.geometry.vertices[8].x, starLine.geometry.vertices[8].y, starLine.geometry.vertices[8].z,  // 8
-      starLine.geometry.vertices[9].x, starLine.geometry.vertices[9].y, starLine.geometry.vertices[9].z,  // 9
-
-      0, 0, 0,                                                                                            // origin
-      starLine.geometry.vertices[8].x, starLine.geometry.vertices[8].y, starLine.geometry.vertices[8].z,  // 8
-      starLine.geometry.vertices[9].x, starLine.geometry.vertices[9].y, starLine.geometry.vertices[9].z,  // 9
-
-      0, 0, 0,                                                                                            // origin
-      starLine.geometry.vertices[9].x, starLine.geometry.vertices[9].y, starLine.geometry.vertices[9].z,  // 9
-      starLine.geometry.vertices[0].x, starLine.geometry.vertices[0].y, starLine.geometry.vertices[0].z,  // 0
-
-    ];
-
-    trianglesBufferGeometry.addAttribute('position', new THREE.Float32BufferAttribute(trianglesPositions, 3));
-    var trianglesMaterial = new THREE.MeshNormalMaterial();
-    var trianglesMaterial = new THREE.MeshBasicMaterial( {
-      color: 0x0000fff,
-      side: THREE.DoubleSide
-    } );
-    var trianglesMesh = new THREE.Mesh(trianglesBufferGeometry, trianglesMaterial);
-    trianglesMesh.rotateZ(Math.PI / 2.0);
-    scene.add(trianglesMesh)
-
-    var trianglesWireframeMaterial = new THREE.MeshBasicMaterial( {
-      color: 0xfffffff,
-      wireframe: true,
-    } );
-    var trianglesWireframeMesh = new THREE.Mesh(trianglesBufferGeometry, trianglesWireframeMaterial);
-    trianglesWireframeMesh.rotateZ(Math.PI / 2.0);
-    scene.add(trianglesWireframeMesh)
+    initTrianglesMeshGroup();
 
     // gui for circle line
     var guiFolderEllipse = gui.addFolder('Circle');
