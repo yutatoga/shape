@@ -107,7 +107,7 @@
     guiFolderStarLine.addColor(settings, 'starLineMaterialColor').onChange(function(color){
       starLine.material.color.setStyle(color);
     });
-    guiFolderStarLine.add(settings, 'starLineVerticesLength', 2, 100).onChange(updateStarLine);
+    guiFolderStarLine.add(settings, 'starLineVerticesLength', 2, 100).step(1).onChange(updateStarLine);
 
     function initStarLine(){
       var starLineMaterial = new THREE.LineBasicMaterial({
