@@ -52,6 +52,7 @@
     this.initialCameraPositionZ = 30;
 
     this.centerFront = new THREE.Vector3(0, 0, 10);
+    this.centerBack = new THREE.Vector3(0, 0, -10);
   }
   var settings = new Settings();
   var scene, camera, renderer;
@@ -244,6 +245,8 @@
     function initTrianglesMeshGroup(){
       var trianglesBufferGeometry = new THREE.BufferGeometry();
       var trianglesPositions = [];
+
+      // FRONT
       for (var i = 0; i < starLine.geometry.vertices.length; i++){
         // counter-clockwise
         trianglesPositions.push(settings.centerFront.x, settings.centerFront.y, settings.centerFront.z); // origin
@@ -251,11 +254,18 @@
         trianglesPositions.push(starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].x, starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].y, starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].z);
       }
 
+      // BACK
+      for (var i = 0; i < starLine.geometry.vertices.length; i++){
+        // counter-clockwise
+        trianglesPositions.push(settings.centerBack.x, settings.centerBack.y, settings.centerBack.z); // origin
+        trianglesPositions.push(starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].x, starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].y, starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].z);
+        trianglesPositions.push(starLine.geometry.vertices[i].x, starLine.geometry.vertices[i].y, starLine.geometry.vertices[i].z);
+      }
+
+
       trianglesBufferGeometry.addAttribute('position', new THREE.Float32BufferAttribute(trianglesPositions, 3));
       trianglesBufferGeometry.computeVertexNormals();
-      var trianglesMaterial = new THREE.MeshNormalMaterial({
-        side: THREE.DoubleSide
-      });
+      var trianglesMaterial = new THREE.MeshNormalMaterial();
 
       trianglesMesh = new THREE.Mesh(trianglesBufferGeometry, trianglesMaterial);
       trianglesMeshGroup.add(trianglesMesh)
@@ -269,6 +279,18 @@
     }
 
     initTrianglesMeshGroup();
+
+    // gui for trianglesMesh
+    var guiFolderTrianglesMesh = gui.addFolder('Triangles');
+    // front
+    guiFolderTrianglesMesh.add(settings.centerFront, 'x').name('centerFront.x').step(0.01).onChange(updateStarLine);
+    guiFolderTrianglesMesh.add(settings.centerFront, 'y').name('centerFront.y').step(0.01).onChange(updateStarLine);
+    guiFolderTrianglesMesh.add(settings.centerFront, 'z').name('centerFront.z').step(0.01).onChange(updateStarLine);
+    // back
+    guiFolderTrianglesMesh.add(settings.centerBack, 'x').name('centerBack.x').step(0.01).onChange(updateStarLine);
+    guiFolderTrianglesMesh.add(settings.centerBack, 'y').name('centerBack.y').step(0.01).onChange(updateStarLine);
+    guiFolderTrianglesMesh.add(settings.centerBack, 'z').name('centerBack.z').step(0.01).onChange(updateStarLine);
+    guiFolderTrianglesMesh.open();
 
     // gui for circle line
     var guiFolderEllipse = gui.addFolder('Circle');
