@@ -283,20 +283,6 @@
     trianglesWireframeMesh.rotateZ(Math.PI / 2.0);
     scene.add(trianglesWireframeMesh)
 
-
-
-    // var triangles bufferGeometry = new THREE.BufferGeometry().fromGeometry( geometry );
-    // var vertices = new Float32Array( [
-    //   -1.0, -1.0,  1.0,
-    //   1.0, -1.0,  1.0,
-    //   1.0,  1.0,  1.0,
-    //
-    //   1.0,  1.0,  1.0,
-    //   -1.0,  1.0,  1.0,
-    //   -1.0, -1.0,  1.0
-    // ] );
-
-
     // gui for circle line
     var guiFolderEllipse = gui.addFolder('Circle');
     guiFolderEllipse.add(settings, 'starLineRadiusIn').onChange(updateStarLine);
