@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>shape</title>
+  <style>
+
+  body {
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .label{
+    color: #FFF;
+    font-family: sans-serif;
+    padding: 2px;
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #fff;
+    border-radius: 50%;
+    font-size: 12px;
+    line-height: 20px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  </style>
+</head>
+<body>
+  <div id = "containers">
+    <div id = "containerWebGLRenderer"></div>
+    <div id = "containerCSS2DRenderer"></div>
+  </div>
+
+  <script type="text/javascript" src="/js/three.js"></script>
+  <script type="text/javascript" src="/js/dat.gui.js"></script>
+  <script type="text/javascript" src="/js/OrbitControls.js"></script>
+  <script type="text/javascript" src="/js/DDSLoader.js"></script>
+  <script type="text/javascript" src="/js/stats.js"></script>
+  <script type="text/javascript" src="/js/CSS2DRenderer.js"></script>
+  <script>
+
+  var Settings = function(){
+    this.starLineMaterialColor = "#ffaa00";
+    this.starLineVerticesLength = 10; //頂点数
+    this.starLineSpokeRatio = 0.382; //スポーク比の設定
+    this.starLineRadiusOut = 20; //外側の円の半径のサイズ
+    this.starLineRadiusIn = this.starLineRadiusOut * this.starLineSpokeRatio;
+
+    // initial value
+    this.initialCameraPositionZ = 30;
+
+    this.centerFront = new THREE.Vector3(0, 0, 10);
+    this.centerBack = new THREE.Vector3(0, 0, -10);
+
+    // JSON
+    this.json = function(){
+      var json = trianglesWireframeMesh.geometry.toJSON();
+      localStorage.setItem("json", JSON.stringify(json));
+    }
+  }
+  var settings = new Settings();
+  var scene, camera, renderer;
+  var controls;
+  var starLine, ellipseInLine, ellipseOutLine;
+  var trianglesWireframeMesh;
+  var trianglesMeshGroup;
+  var labelGroup;
+
+  init();
+  animate();
+
+  function init(){
+    var gui = new dat.GUI();
+
+    // scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
+    group = new THREE.Group();
+    scene.add(group);
+
+    // WebGLRenderer
+    rendererWebGL = new THREE.WebGLRenderer({ antialias: true });
+    rendererWebGL.setSize(window.innerWidth, window.innerHeight);
+    rendererWebGL.setPixelRatio(window.devicePixelRatio);
+    document.getElementById("containerWebGLRenderer").appendChild(rendererWebGL.domElement);
+
+    // CSS2DRenderer
+    rendererCSS2D = new THREE.CSS2DRenderer();
+    rendererCSS2D.setSize(window.innerWidth, window.innerHeight);
+    rendererCSS2D.domElement.style.position = 'absolute';
+    rendererCSS2D.domElement.style.top = 0;
+    document.getElementById("containerCSS2DRenderer").appendChild(rendererCSS2D.domElement);
+
+    window.addEventListener( 'resize', function () {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      rendererWebGL.setSize(window.innerWidth, window.innerHeight);
+      rendererCSS2D.setSize(window.innerWidth, window.innerHeight);
+    }, false );
+
+    // camera
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+    camera.position.z = settings.initialCameraPositionZ;
+
+    controls = new THREE.OrbitControls(camera, rendererCSS2D.domElement);    // - damping
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.25; // default is 0.25
+    controls.zoomSpeed = 0.5; // default is 1
+
+    // light
+    var ambientLight = new THREE.AmbientLight(0x404040); // soft white light
+    scene.add(ambientLight);
+
+    var directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    scene.add(directionalLight);
+
+    // star
+    initStarLine();
+
+    // - gui
+    var guiFolderStarLine = gui.addFolder('Star')
+    guiFolderStarLine.addColor(settings, 'starLineMaterialColor').onChange(function(color){
+      starLine.material.color.setStyle(color);
+    });
+    guiFolderStarLine.add(settings, 'starLineVerticesLength', 2, 100).step(1).onChange(updateStarLine);
+
+    function initStarLine(){
+      var starLineMaterial = new THREE.LineBasicMaterial({
+        color: settings.starLineMaterialColor
+      });
+
+      var starLineGeometry = new THREE.Geometry();
+
+      var R;  //半径の変数
+      var x;
+      var y;
+
+      labelGroup = new THREE.Group();
+      scene.add(labelGroup);
+
+      for (var i = 0; i < settings.starLineVerticesLength; i++) {
+        if (i % 2 == 0) {
+          R = settings.starLineRadiusOut; //頂点が偶数の場合
+        } else {
+          R = settings.starLineRadiusIn; //頂点が奇数の場合
+        }
+        x = R * Math.cos(Math.PI * 2 / settings.starLineVerticesLength * i);　//x座標取得　radians( );ラジアンを度に変換
+        y = R * Math.sin(Math.PI * 2 / settings.starLineVerticesLength * i);　//y座標取得　radians( );ラジアンを度に変換
+        var vertex = new THREE.Vector3(x, y, 0);
+        starLineGeometry.vertices.push(vertex);
+
+        // label
+        var labelDiv = document.createElement('div');
+        labelDiv.className = 'label';
+        labelDiv.textContent = i;
+        labelDiv.style.marginTop = '-1em';
+        var labelCSS2DObject = new THREE.CSS2DObject(labelDiv);
+        labelCSS2DObject.position.copy(vertex);
+        labelGroup.add(labelCSS2DObject);
+      }
+
+      // close star
+      starLineGeometry.vertices.push(starLineGeometry.vertices[0]);
+      var labelDiv = document.createElement('div');
+      labelDiv.className = 'label';
+      labelDiv.textContent = settings.starLineVerticesLength;
+      labelDiv.style.marginTop = '-2em';
+      labelDiv.style.marginLeft = '1em';
+      var labelCSS2DObject = new THREE.CSS2DObject(labelDiv);
+      labelCSS2DObject.position.copy(vertex);
+      labelGroup.add(labelCSS2DObject);
+
+      starLine = new THREE.Line(starLineGeometry, starLineMaterial);
+
+      // rotate
+      starLine.rotateZ(Math.PI / 2.0);
+      labelGroup.rotateZ(Math.PI / 2.0);
+
+      scene.add(starLine);
+
+
+      // circle IN
+      var curveIn = new THREE.EllipseCurve(
+        0,  0,                                                  // ax, aY
+        settings.starLineRadiusIn, settings.starLineRadiusIn,   // xRadius, yRadius
+        0,  2 * Math.PI,                                        // aStartAngle, aEndAngle
+        false,                                                  // aClockwise
+        0                                                       // aRotation
+      );
+      var ellipseInPoints = curveIn.getPoints(100);
+      var ellipseInGeometry = new THREE.BufferGeometry().setFromPoints(ellipseInPoints);
+      var ellipseInMaterial = new THREE.LineBasicMaterial( { color : 0xff0000 } );
+      ellipseInLine = new THREE.Line(ellipseInGeometry, ellipseInMaterial);
+      scene.add(ellipseInLine);
+
+      // circle OUT
+      var curveOut = new THREE.EllipseCurve(
+        0,  0,                                                  // ax, aY
+        settings.starLineRadiusOut, settings.starLineRadiusOut, // xRadius, yRadius
+        0,  2 * Math.PI,                                        // aStartAngle, aEndAngle
+        false,                                                  // aClockwise
+        0                                                       // aRotation
+      );
+      var ellipseOutPoints = curveOut.getPoints(100);
+      var ellipseOutGeometry = new THREE.BufferGeometry().setFromPoints(ellipseOutPoints);
+      var ellipseOutMaterial = new THREE.LineBasicMaterial( { color : 0x00ff00 } );
+      ellipseOutLine = new THREE.Line(ellipseOutGeometry, ellipseOutMaterial);
+      scene.add(ellipseOutLine);
+
+    }
+
+    function updateStarLine(){
+      scene.remove(starLine);
+      starLine.geometry.dispose();
+      starLine.material.dispose();
+
+      scene.remove(ellipseInLine);
+      ellipseInLine.geometry.dispose();
+      ellipseInLine.material.dispose();
+
+      scene.remove(ellipseOutLine);
+      ellipseOutLine.geometry.dispose();
+      ellipseOutLine.material.dispose();
+
+      trianglesMeshGroup.remove(trianglesMesh);
+      trianglesMesh.geometry.dispose();
+      trianglesMesh.material.dispose();
+
+      trianglesMeshGroup.remove(trianglesWireframeMesh);
+      trianglesWireframeMesh.geometry.dispose();
+      trianglesWireframeMesh.material.dispose();
+
+      for (var i = labelGroup.children.length - 1; i >= 0 ; i--){
+        labelGroup.remove(labelGroup.children[i]);
+      }
+
+      initStarLine();
+      initTrianglesMeshGroup();
+    }
+
+    guiFolderStarLine.open();
+
+    // trianglesMesh
+    trianglesMeshGroup = new THREE.Group();
+    trianglesMeshGroup.rotateZ(Math.PI / 2.0);
+    scene.add(trianglesMeshGroup);
+
+
+    function initTrianglesMeshGroup(){
+      var trianglesBufferGeometry = new THREE.BufferGeometry();
+      var trianglesPositions = [];
+
+      // FRONT
+      for (var i = 0; i < starLine.geometry.vertices.length; i++){
+        // counter-clockwise
+        trianglesPositions.push(settings.centerFront.x, settings.centerFront.y, settings.centerFront.z); // origin
+        trianglesPositions.push(starLine.geometry.vertices[i].x, starLine.geometry.vertices[i].y, starLine.geometry.vertices[i].z);
+        trianglesPositions.push(starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].x, starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].y, starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].z);
+      }
+
+      // BACK
+      for (var i = 0; i < starLine.geometry.vertices.length; i++){
+        // counter-clockwise
+        trianglesPositions.push(settings.centerBack.x, settings.centerBack.y, settings.centerBack.z); // origin
+        trianglesPositions.push(starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].x, starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].y, starLine.geometry.vertices[ (i + 1) %  starLine.geometry.vertices.length].z);
+        trianglesPositions.push(starLine.geometry.vertices[i].x, starLine.geometry.vertices[i].y, starLine.geometry.vertices[i].z);
+      }
+
+
+      trianglesBufferGeometry.addAttribute('position', new THREE.Float32BufferAttribute(trianglesPositions, 3));
+      trianglesBufferGeometry.computeVertexNormals();
+      var trianglesMaterial = new THREE.MeshNormalMaterial();
+
+      trianglesMesh = new THREE.Mesh(trianglesBufferGeometry, trianglesMaterial);
+      trianglesMeshGroup.add(trianglesMesh)
+
+      var trianglesWireframeMaterial = new THREE.MeshBasicMaterial( {
+        color: 0xfffffff,
+        wireframe: true,
+      } );
+      trianglesWireframeMesh = new THREE.Mesh(trianglesBufferGeometry, trianglesWireframeMaterial);
+      trianglesMeshGroup.add(trianglesWireframeMesh)
+    }
+
+    initTrianglesMeshGroup();
+
+    // gui for trianglesMesh
+    var guiFolderTrianglesMesh = gui.addFolder('Triangles');
+    // front
+    guiFolderTrianglesMesh.add(settings.centerFront, 'x').name('centerFront.x').step(0.01).onChange(updateStarLine);
+    guiFolderTrianglesMesh.add(settings.centerFront, 'y').name('centerFront.y').step(0.01).onChange(updateStarLine);
+    guiFolderTrianglesMesh.add(settings.centerFront, 'z').name('centerFront.z').step(0.01).onChange(updateStarLine);
+    // back
+    guiFolderTrianglesMesh.add(settings.centerBack, 'x').name('centerBack.x').step(0.01).onChange(updateStarLine);
+    guiFolderTrianglesMesh.add(settings.centerBack, 'y').name('centerBack.y').step(0.01).onChange(updateStarLine);
+    guiFolderTrianglesMesh.add(settings.centerBack, 'z').name('centerBack.z').step(0.01).onChange(updateStarLine);
+    guiFolderTrianglesMesh.open();
+
+    // gui for circle line
+    var guiFolderEllipse = gui.addFolder('Circle');
+    guiFolderEllipse.add(settings, 'starLineRadiusIn').onChange(updateStarLine);
+    guiFolderEllipse.add(settings, 'starLineRadiusOut').onChange(updateStarLine);
+    guiFolderEllipse.open();
+
+    // json
+    var guiFolderJSON = gui.addFolder('JSON');
+    guiFolderJSON.add(settings, 'json');
+    guiFolderJSON.open();
+
+    // debug
+    stats = new Stats();
+    stats.showPanel(0);
+    document.body.appendChild(stats.dom);
+
+  }
+
+  function animate() {
+    stats.begin();
+
+    controls.update();
+
+    group.rotation.x += 0.005;
+    group.rotation.y += 0.005;
+
+  	rendererWebGL.render(scene, camera);
+    rendererCSS2D.render(scene, camera);
+
+    stats.end();
+
+    requestAnimationFrame(animate);
+  }
+
+  </script>
+</body>
+</html>
