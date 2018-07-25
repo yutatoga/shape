@@ -215,6 +215,7 @@
           for (var i = 0; i < settings.groupGroupChildrenLength; i++){
             var theta = THETA * i;
             var groupClone = group.clone();
+            groupClone.visible = true;
             groupClone.position.set(Math.cos(theta) * settings.groupGroupRadius, 0, Math.sin(theta) * settings.groupGroupRadius);
             groupGroup.add(groupClone);
           }
