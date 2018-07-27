@@ -18,7 +18,8 @@
   <script type="text/javascript" src="/js/OBJLoader.js"></script>
   <script type="text/javascript" src="/js/DDSLoader.js"></script>
   <script type="text/javascript" src="/js/SVGLoader.js"></script>
-  <script type="text/javascript" src="/js/stats.js"></script>
+  <script type="text/javascript" src="/js/d3-threeD.js"></script>
+  <script type="text/javascript" src="/js/d3-threeD.js"></script>
   <script>
 
   var Settings = function(){
@@ -96,7 +97,7 @@
       material.needsUpdate = true;
     } );
 
-    // var texture= new THREE.SVGLoader().load('texture/logo.svg');
+    // var texture= new THREE.SVGLoader().load('texture/logo_tabelog.svg');
     var texture = new THREE.TextureLoader().load( 'texture/logo.png');
 
     var material = new THREE.MeshPhongMaterial( {
@@ -185,6 +186,10 @@
     guiFolderGroup.add(group.scale, 'y').name('scale.y');
     guiFolderGroup.add(group.scale, 'z').name('scale.z');
     guiFolderGroup.open();
+
+    // svg
+    var 
+
 
     // light
     var lights = [];
