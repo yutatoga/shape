@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>shape</title>
+  <style>
+  body {
+    margin: 0;
+    overflow: hidden;
+  }
+
+  </style>
+</head>
+<body>
+  <script type="text/javascript" src="/js/three.js"></script>
+  <script type="text/javascript" src="/js/dat.gui.js"></script>
+  <script type="text/javascript" src="/js/OrbitControls.js"></script>
+  <script type="text/javascript" src="/js/SVGLoader.js"></script>
+  <script type="text/javascript" src="/js/stats.js"></script>
+  <script>
+
+  var Settings = function(){
+    this.geometryRaidus = 5;
+    this.geometryDetail = 0;
+
+    this.materialColor =    "#ffaa00";
+    this.materialEmissive = "#111111";
+    this.materialSpecular = "#ffffff";
+
+    this.lineMaterialColor = "#ffffff";
+
+    // initial value
+    this.initialMaterialShininess = 100;
+    this.initialCameraPositionZ = 30;
+
+    this.initialLineMaterialOpacity = 0.0;
+
+    this.initialGroupScaleX = 1.2;
+    this.initialGroupScaleY = 1.8;
+    this.initialGroupScaleZ = 1.2;
+
+    this.material = 'MeshPhongMaterial';
+    this.materialsOptions = [this.material, 'MeshBasicMaterial'];
+
+  }
+
+  var settings = new Settings();
+  var scene, camera, renderer;
+  var controls;
+  var group;
+  var shapesArray = [];
+
+  init();
+  animate();
+
+  function init(){
+    var gui = new dat.GUI();
+
+    // scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
+    group = new THREE.Group();
+    group.scale.multiplyScalar(0.1);
+    group.scale.y *= -1;
+    scene.add(group);
+
+    // renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
+
+    window.addEventListener( 'resize', function () {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+    }, false );
+
+    // camera
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+    camera.position.z = settings.initialCameraPositionZ;
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);    // - damping
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.25; // default is 0.25
+    controls.zoomSpeed = 0.5; // default is 1
+
+    // light
+    var ambientLight = new THREE.AmbientLight(0x404040); // soft white light
+    scene.add(ambientLight);
+
+    var directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    scene.add(directionalLight);
+
+    // svg
+    // use the same extrudeSettings for each paths
+    var extrudeSettings = {
+      curveSegments: 12,
+      steps: 2,
+      depth: 16,
+      bevelEnabled: true,
+      bevelThickness: 1,
+      bevelSize: 1,
+      bevelSegments: 1
+    };
+
+    function initMesh(){
+      var loader = new THREE.SVGLoader();
+      loader.load('texture/logo.svg', function (paths) {
+        for (var i = 0; i < paths.length; i ++) {
+          var path = paths[i];
+
+          var material = new THREE.MeshPhongMaterial( {
+            color: path.color,
+            depthWrite: true
+          } );
+
+          var shapes = path.toShapes(true, false);
+
+          for (var j = 0; j < shapes.length; j ++) {
+            var shape = shapes[j];
+            var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+            var mesh = new THREE.Mesh(geometry, material);
+            group.add(mesh);
+          }
+
+        }
+
+        scene.add(group);
+      } );
+    }
+
+    initMesh();
+
+    var guiFolderExtrudeSettings = gui.addFolder('extrudeSettings');
+    guiFolderExtrudeSettings.add(extrudeSettings, 'curveSegments').step(1).onChange(updateMesh);
+    guiFolderExtrudeSettings.add(extrudeSettings, 'steps').step(1).onChange(updateMesh);
+    guiFolderExtrudeSettings.add(extrudeSettings, 'depth').onChange(updateMesh);
+    guiFolderExtrudeSettings.add(extrudeSettings, 'bevelEnabled').onChange(updateMesh);
+    guiFolderExtrudeSettings.add(extrudeSettings, 'bevelThickness').onChange(updateMesh);
+    guiFolderExtrudeSettings.add(extrudeSettings, 'bevelSize').onChange(updateMesh);
+    guiFolderExtrudeSettings.add(extrudeSettings, 'bevelSegments').onChange(updateMesh);
+
+    function updateMesh(){
+      scene.remove(group);
+
+      for (var i = group.children.length - 1; i >= 0 ; i--){
+        group.children[i].geometry.dispose();
+        group.children[i].material.dispose();
+        group.remove(group.children[i]);
+      }
+
+      initMesh();
+    }
+    guiFolderExtrudeSettings.open();
+
+    // debug
+    var axesHelper = new THREE.AxesHelper(5);
+    scene.add( axesHelper );
+
+    stats = new Stats();
+    stats.showPanel(0);
+    document.body.appendChild(stats.dom);
+
+  }
+
+  function animate() {
+    stats.begin();
+
+    controls.update();
+
+  	renderer.render(scene, camera);
+
+    stats.end();
+
+    requestAnimationFrame(animate);
+  }
+
+  </script>
+</body>
+</html>
