@@ -39,9 +39,9 @@
 
     this.initialLineMaterialOpacity = 0.0;
 
-    this.initialGroupScaleX = 0.1;
-    this.initialGroupScaleY = -0.1;
-    this.initialGroupScaleZ = 1.0;
+    this.initialGroupSVGScaleX = 0.1;
+    this.initialGroupSVGScaleY = -0.1;
+    this.initialGroupSVGScaleZ = 1.0;
 
     this.initialBaseMeshRadiusTop = 20;
     this.initialBaseMeshRadiusBottom = 20;
@@ -58,7 +58,7 @@
   var settings = new Settings();
   var scene, camera, renderer;
   var controls;
-  var group;
+  var groupSVG;
   var shapesArray = [];
   var arcShape;
 
@@ -72,9 +72,9 @@
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
 
-    group = new THREE.Group();
-    group.scale.set(settings.initialGroupScaleX, settings.initialGroupScaleY, settings.initialGroupScaleZ);
-    scene.add(group);
+    groupSVG = new THREE.Group();
+    groupSVG.scale.set(settings.initialGroupSVGScaleX, settings.initialGroupSVGScaleY, settings.initialGroupSVGScaleZ);
+    scene.add(groupSVG);
 
     // renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -123,7 +123,7 @@
       bevelSegments: 1
     };
 
-    function initMesh(){
+    function initMeshSVG(){
       var loader = new THREE.SVGLoader();
       loader.load('texture/logo.svg', function (paths) {
         for (var i = 0; i < paths.length; i ++) {
@@ -141,24 +141,24 @@
             var shape = shapes[j];
             var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettingsSVG);
             var mesh = new THREE.Mesh(geometry, material);
-            group.add(mesh);
+            groupSVG.add(mesh);
           }
 
         }
-        new THREE.Box3().setFromObject(group).getCenter(group.position).multiplyScalar(- 1); // set the logo at the center
-        scene.add(group);
+        new THREE.Box3().setFromObject(groupSVG).getCenter(groupSVG.position).multiplyScalar(- 1); // set the logo at the center
+        scene.add(groupSVG);
       } );
     }
 
-    initMesh();
+    initMeshSVG();
 
     var guiFolderGroupSVG = gui.addFolder("Group SVG");
-    guiFolderGroupSVG.add(group.scale, 'x').name('scale.x').onChange(setGroupInCenter);
-    guiFolderGroupSVG.add(group.scale, 'y').name('scale.y').onChange(setGroupInCenter);
-    guiFolderGroupSVG.add(group.scale, 'z').name('scale.z').onChange(setGroupInCenter);
+    guiFolderGroupSVG.add(groupSVG.scale, 'x').name('scale.x').onChange(setGroupInCenter);
+    guiFolderGroupSVG.add(groupSVG.scale, 'y').name('scale.y').onChange(setGroupInCenter);
+    guiFolderGroupSVG.add(groupSVG.scale, 'z').name('scale.z').onChange(setGroupInCenter);
     function setGroupInCenter(){
-      group.position.set(0, 0, 0);
-      new THREE.Box3().setFromObject(group).getCenter(group.position).multiplyScalar(- 1); // set the logo at the center
+      groupSVG.position.set(0, 0, 0);
+      new THREE.Box3().setFromObject(groupSVG).getCenter(groupSVG.position).multiplyScalar(- 1); // set the logo at the center
     }
     guiFolderGroupSVG.open();
 
@@ -173,15 +173,15 @@
     guiFolderExtrudeSettingsSVG.add(extrudeSettingsSVG, 'bevelSegments').onChange(updateMeshSVG);
 
     function updateMeshSVG(){
-      scene.remove(group);
+      scene.remove(groupSVG);
 
-      for (var i = group.children.length - 1; i >= 0 ; i--){
-        group.children[i].geometry.dispose();
-        group.children[i].material.dispose();
-        group.remove(group.children[i]);
+      for (var i = groupSVG.children.length - 1; i >= 0 ; i--){
+        groupSVG.children[i].geometry.dispose();
+        groupSVG.children[i].material.dispose();
+        groupSVG.remove(groupSVG.children[i]);
       }
 
-      initMesh();
+      initMeshSVG();
       setGroupInCenter();
     }
 
@@ -213,7 +213,7 @@
 
       fiveYenMaterial.needsUpdate = true;
       baseMaterial.needsUpdate = true;
-      group.children.forEach(function(mesh){mesh.material.needsUpdate = true;});
+      groupSVG.children.forEach(function(mesh){mesh.material.needsUpdate = true;});
     } );
 
     var fiveYenMaterial = new THREE.MeshPhongMaterial( {
@@ -258,7 +258,7 @@
       fiveYenMesh.material.dispose();
 
       fiveYenGeometry = new THREE.ExtrudeGeometry(arcShape, extrudeSettingsFiveYen);
-      fiveYenMaterial = new THREE.MeshPhongMaterial( { color: settings.fiveYenColor } );
+      fiveYenGeometry.center();
       fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMaterial);
       scene.add(fiveYenMesh);
     }
