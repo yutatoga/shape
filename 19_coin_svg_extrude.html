@@ -15,6 +15,7 @@
   <script type="text/javascript" src="/js/three.js"></script>
   <script type="text/javascript" src="/js/dat.gui.js"></script>
   <script type="text/javascript" src="/js/OrbitControls.js"></script>
+  <script type="text/javascript" src="/js/DDSLoader.js"></script>
   <script type="text/javascript" src="/js/SVGLoader.js"></script>
   <script type="text/javascript" src="/js/stats.js"></script>
   <script>
@@ -123,6 +124,7 @@
 
           var material = new THREE.MeshPhongMaterial( {
             color: path.color,
+            envMap: envMap,
             depthWrite: true
           } );
 
@@ -196,7 +198,21 @@
 
     var fiveYenGeometry = new THREE.ExtrudeGeometry(arcShape, extrudeSettingsFiveYen);
     fiveYenGeometry.center();
-    var fiveYenMaterial = new THREE.MeshPhongMaterial( { color: 0xffaa00 } );
+    var loaderDDS = new THREE.DDSLoader();
+    var envMap = loaderDDS.load( 'texture/Mountains_argb_mip.dds', function (texture) {
+      texture.magFilter = THREE.LinearFilter;
+      texture.minFilter = THREE.LinearFilter;
+      texture.mapping = THREE.CubeReflectionMapping;
+
+      fiveYenMaterial.needsUpdate = true;
+      baseMaterial.needsUpdate = true;
+      group.children.forEach(function(mesh){mesh.material.needsUpdate = true;});
+    } );
+
+    var fiveYenMaterial = new THREE.MeshPhongMaterial( {
+      color: settings.fiveYenColor,
+      envMap: envMap
+    } );
     var fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMaterial);
     scene.add(fiveYenMesh);
 
@@ -235,14 +251,17 @@
       fiveYenMesh.material.dispose();
 
       fiveYenGeometry = new THREE.ExtrudeGeometry(arcShape, extrudeSettingsFiveYen);
-      fiveYenMaterial = new THREE.MeshPhongMaterial( { color: 0xffaa00 } );
+      fiveYenMaterial = new THREE.MeshPhongMaterial( { color: settings.fiveYenColor } );
       fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMaterial);
       scene.add(fiveYenMesh);
     }
 
     // base of coin
     var baseGeometry = new THREE.CylinderGeometry(settings.initialBaseMeshRadiusTop, settings.initialBaseMeshRadiusBottom, settings.initialBaseMeshHeight, 32);
-    var baseMaterial = new THREE.MeshPhongMaterial( {color: settings.baseColor} );
+    var baseMaterial = new THREE.MeshPhongMaterial( {
+      color: settings.baseColor,
+      envMap: envMap
+    } );
     var baseMesh = new THREE.Mesh(baseGeometry, baseMaterial);
     baseMesh.rotateX(Math.PI / 2.0);
     scene.add(baseMesh);
