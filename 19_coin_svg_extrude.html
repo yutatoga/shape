@@ -58,7 +58,7 @@
   var settings = new Settings();
   var scene, camera, renderer;
   var controls;
-  var groupSVG;
+  var groupSVG, groupCoin;
   var shapesArray = [];
   var arcShape;
 
@@ -74,7 +74,9 @@
 
     groupSVG = new THREE.Group();
     groupSVG.scale.set(settings.initialGroupSVGScaleX, settings.initialGroupSVGScaleY, settings.initialGroupSVGScaleZ);
-    scene.add(groupSVG);
+
+    groupCoin = new THREE.Group();
+    scene.add(groupCoin);
 
     // renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -146,7 +148,7 @@
 
         }
         new THREE.Box3().setFromObject(groupSVG).getCenter(groupSVG.position).multiplyScalar(- 1); // set the logo at the center
-        scene.add(groupSVG);
+        groupCoin.add(groupSVG);
       } );
     }
 
@@ -173,7 +175,7 @@
     guiFolderExtrudeSettingsSVG.add(extrudeSettingsSVG, 'bevelSegments').onChange(updateMeshSVG);
 
     function updateMeshSVG(){
-      scene.remove(groupSVG);
+      groupCoin.remove(groupSVG);
 
       for (var i = groupSVG.children.length - 1; i >= 0 ; i--){
         groupSVG.children[i].geometry.dispose();
@@ -221,7 +223,7 @@
       envMap: envMap
     } );
     var fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMaterial);
-    scene.add(fiveYenMesh);
+    groupCoin.add(fiveYenMesh);
 
     var guiFolderFiveYen = gui.addFolder('Five Yen');
     guiFolderFiveYen.addColor(settings, 'fiveYenColor').onChange(function(color){
@@ -253,14 +255,14 @@
     guiFolderExtrudeSettingsFiveYen.add(extrudeSettingsFiveYen, 'bevelSize').onChange(updateFiveYenMesh);
     guiFolderExtrudeSettingsFiveYen.add(extrudeSettingsFiveYen, 'bevelSegments').onChange(updateFiveYenMesh);
     function updateFiveYenMesh(){
-      scene.remove(fiveYenMesh);
+      groupCoin.remove(fiveYenMesh);
       fiveYenMesh.geometry.dispose();
       fiveYenMesh.material.dispose();
 
       fiveYenGeometry = new THREE.ExtrudeGeometry(arcShape, extrudeSettingsFiveYen);
       fiveYenGeometry.center();
       fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMaterial);
-      scene.add(fiveYenMesh);
+      groupCoin.add(fiveYenMesh);
     }
 
     // base of coin
@@ -271,7 +273,7 @@
     } );
     var baseMesh = new THREE.Mesh(baseGeometry, baseMaterial);
     baseMesh.rotateX(Math.PI / 2.0);
-    scene.add(baseMesh);
+    groupCoin.add(baseMesh);
 
     var guiFolderBase = gui.addFolder('Base');
     guiFolderBase.addColor(settings, 'baseColor').onChange(function(color){
@@ -297,6 +299,9 @@
     stats.begin();
 
     controls.update();
+
+    groupCoin.rotation.x += 0.005;
+    groupCoin.rotation.y += 0.005;
 
   	renderer.render(scene, camera);
 
