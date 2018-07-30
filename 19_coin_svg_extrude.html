@@ -118,7 +118,7 @@
     var extrudeSettingsSVG = {
       curveSegments: 64,
       steps: 1,
-      depth: 2,
+      depth: 1,
       bevelEnabled: false,
       bevelThickness: 1,
       bevelSize: 1,
@@ -147,8 +147,16 @@
           }
 
         }
+        groupSVG.position.set(0, 0, -settings.initialBaseMeshHeight);
         new THREE.Box3().setFromObject(groupSVG).getCenter(groupSVG.position).multiplyScalar(- 1); // set the logo at the center
         groupCoin.add(groupSVG);
+
+        // flipped one for backside
+        var flippedGroupSVG = groupSVG.clone();
+        flippedGroupSVG.rotateY(Math.PI);
+        flippedGroupSVG.position.set(0, 0, settings.initialBaseMeshHeight);
+        new THREE.Box3().setFromObject(flippedGroupSVG).getCenter(flippedGroupSVG.position).multiplyScalar(- 1); // set the logo at the center
+        groupCoin.add(flippedGroupSVG);
       } );
     }
 
@@ -226,6 +234,7 @@
     groupCoin.add(fiveYenMesh);
 
     var guiFolderFiveYen = gui.addFolder('Five Yen');
+    guiFolderFiveYen.add(fiveYenMesh, 'visible');
     guiFolderFiveYen.addColor(settings, 'fiveYenColor').onChange(function(color){
       fiveYenMaterial.color.setStyle(color);
     });
@@ -276,6 +285,7 @@
     groupCoin.add(baseMesh);
 
     var guiFolderBase = gui.addFolder('Base');
+    guiFolderBase.add(baseMesh, 'visible');
     guiFolderBase.addColor(settings, 'baseColor').onChange(function(color){
       baseMaterial.color.setStyle(color);
     });
