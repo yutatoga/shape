@@ -58,7 +58,7 @@
   var settings = new Settings();
   var scene, camera, renderer;
   var controls;
-  var groupSVG, groupCoin;
+  var groupSVG, groupCoin, groupCoinCenterFront, groupCoinCenterBack;
   var shapesArray = [];
   var arcShape;
 
@@ -72,11 +72,18 @@
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0x000000);
 
-    groupSVG = new THREE.Group();
-    groupSVG.scale.set(settings.initialGroupSVGScaleX, settings.initialGroupSVGScaleY, settings.initialGroupSVGScaleZ);
-
     groupCoin = new THREE.Group();
+    groupCoin.name = 'groupCoin';
     scene.add(groupCoin);
+
+    groupCoinCenterFront = new THREE.Group();
+    groupCoinCenterFront.name = 'groupCoinCenterFront';
+    groupCoin.add(groupCoinCenterFront);
+
+    groupSVG = new THREE.Group();
+    groupSVG.name = 'groupSVG';
+    groupSVG.scale.set(settings.initialGroupSVGScaleX, settings.initialGroupSVGScaleY, settings.initialGroupSVGScaleZ);
+    groupCoinCenterFront.add(groupSVG);
 
     // renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -100,6 +107,10 @@
     controls.zoomSpeed = 0.5; // default is 1
 
     // light
+    var groupLight = new THREE.Group();
+    groupLight.name = 'groupLight';
+    scene.add(groupLight);
+
     var lights = [];
     lights[0] = new THREE.PointLight(0xffffff, 1, 0);
     lights[1] = new THREE.PointLight(0xffffff, 1, 0);
@@ -109,9 +120,42 @@
     lights[1].position.set(100, 200, 100);
     lights[2].position.set(- 100, - 200, - 100);
 
-    scene.add(lights[0]);
-    scene.add(lights[1]);
-    scene.add(lights[2]);
+    groupLight.add(lights[0]);
+    groupLight.add(lights[1]);
+    groupLight.add(lights[2]);
+
+    // base of coin
+    var baseGeometry = new THREE.CylinderGeometry(settings.initialBaseMeshRadiusTop, settings.initialBaseMeshRadiusBottom, settings.initialBaseMeshHeight, 32);
+    var baseMaterial = new THREE.MeshPhongMaterial( {
+      color: settings.baseColor,
+      envMap: envMap
+    } );
+    var baseMesh = new THREE.Mesh(baseGeometry, baseMaterial);
+    baseMesh.name = 'baseMesh';
+    baseMesh.rotateX(Math.PI / 2.0);
+    groupCoin.add(baseMesh);
+
+    var guiFolderBase = gui.addFolder('Base');
+    guiFolderBase.add(baseMesh, 'visible');
+    guiFolderBase.addColor(settings, 'baseColor').onChange(function(color){
+      baseMaterial.color.setStyle(color);
+    });
+    guiFolderBase.add(baseMesh.scale, 'x').name('scale.x');
+    guiFolderBase.add(baseMesh.scale, 'y').name('scale.y').onChange(function(){
+      // put groupSVG on the both of front furface and back surface.
+      // - front
+      groupCoinCenterFront.position.set(0, 0, settings.initialBaseMeshHeight / 2.0 * baseMesh.scale.y);
+
+      // - back
+      var position = groupCoinCenterFront.position.clone();
+      position.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI);
+      groupCoinCenterBack.position.copy(position);
+
+    });
+    guiFolderBase.add(baseMesh.scale, 'z').name('scale.z');
+
+    guiFolderBase.open();
+
 
     // svg
     // use the same extrudeSettings for each paths
@@ -147,16 +191,22 @@
           }
 
         }
-        groupSVG.position.set(0, 0, -settings.initialBaseMeshHeight);
-        new THREE.Box3().setFromObject(groupSVG).getCenter(groupSVG.position).multiplyScalar(- 1); // set the logo at the center
-        groupCoin.add(groupSVG);
+
+        // set the logo at the center
+        groupCoinCenterFront.position.set(0, 0, settings.initialBaseMeshHeight / 2.0 * baseMesh.scale.y);
+        var groupSVGClone = groupSVG.clone();
+
+        var centerSVG = new THREE.Box3().setFromObject(groupSVGClone).getCenter(groupSVGClone.position);
+        var moveToCenter = centerSVG.negate();
+        moveToCenter.z += extrudeSettingsSVG.depth / 2.0;
+        groupSVG.position.copy(moveToCenter);
 
         // flipped one for backside
-        var flippedGroupSVG = groupSVG.clone();
-        flippedGroupSVG.rotateY(Math.PI);
-        flippedGroupSVG.position.set(0, 0, settings.initialBaseMeshHeight);
-        new THREE.Box3().setFromObject(flippedGroupSVG).getCenter(flippedGroupSVG.position).multiplyScalar(- 1); // set the logo at the center
-        groupCoin.add(flippedGroupSVG);
+        groupCoinCenterBack = groupCoinCenterFront.clone();
+        groupCoinCenterBack.name = 'groupCoinCenterBack';
+        groupCoinCenterBack.rotateY(Math.PI); // back to back
+        groupCoinCenterBack.position.z -= settings.initialBaseMeshHeight * baseMesh.scale.y; // go tp the surface of back
+        groupCoin.add(groupCoinCenterBack);
       } );
     }
 
@@ -231,6 +281,7 @@
       envMap: envMap
     } );
     var fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMaterial);
+    fiveYenMesh.name = 'fiveYenMesh';
     groupCoin.add(fiveYenMesh);
 
     var guiFolderFiveYen = gui.addFolder('Five Yen');
@@ -274,29 +325,9 @@
       groupCoin.add(fiveYenMesh);
     }
 
-    // base of coin
-    var baseGeometry = new THREE.CylinderGeometry(settings.initialBaseMeshRadiusTop, settings.initialBaseMeshRadiusBottom, settings.initialBaseMeshHeight, 32);
-    var baseMaterial = new THREE.MeshPhongMaterial( {
-      color: settings.baseColor,
-      envMap: envMap
-    } );
-    var baseMesh = new THREE.Mesh(baseGeometry, baseMaterial);
-    baseMesh.rotateX(Math.PI / 2.0);
-    groupCoin.add(baseMesh);
-
-    var guiFolderBase = gui.addFolder('Base');
-    guiFolderBase.add(baseMesh, 'visible');
-    guiFolderBase.addColor(settings, 'baseColor').onChange(function(color){
-      baseMaterial.color.setStyle(color);
-    });
-    guiFolderBase.add(baseMesh.scale, 'x').name('scale.x');
-    guiFolderBase.add(baseMesh.scale, 'y').name('scale.y');
-    guiFolderBase.add(baseMesh.scale, 'z').name('scale.z');
-
-    guiFolderBase.open();
-
     // debug
     var axesHelper = new THREE.AxesHelper(25);
+    axesHelper.name = 'axesHelper';
     scene.add(axesHelper);
 
     stats = new Stats();
