@@ -30,7 +30,7 @@
 
     // initial value
     this.initialMaterialShininess = 100;
-    this.initialCameraPositionZ = 10;
+    this.initialCameraPositionZ = 100;
 
     this.initialGroupScaleX = 0.24;
     this.initialGroupScaleY = 0.36;
@@ -154,7 +154,7 @@
 
     loader.load( '/font/helvetiker_regular.typeface.json', function ( font ) {
 
-      var textGeometry = new THREE.TextGeometry( 'e', {
+      var textGeometry = new THREE.TextGeometry( 'Hello', {
         font: font,
         size: settings.textGeometrySize,
         height: settings.textGeometryHeight,
