@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>shape</title>
+  <style>
+  body {
+    margin: 0;
+    overflow: hidden;
+  }
+
+  </style>
+</head>
+<body>
+  <div id="containerStats"></div>
+
+  <script type="text/javascript" src="/js/three.js"></script>
+  <script type="text/javascript" src="/js/dat.gui.js"></script>
+  <script type="text/javascript" src="/js/OrbitControls.js"></script>
+  <script type="text/javascript" src="/js/OBJLoader.js"></script>
+  <script type="text/javascript" src="/js/DDSLoader.js"></script>
+  <script type="text/javascript" src="/js/stats.js"></script>
+  <script>
+
+  var Settings = function(){
+    this.geometryRaidus = 5;
+    this.geometryDetail = 0;
+
+    this.materialColor =    "#ffaa00";
+    this.materialEmissive = "#111111";
+    this.materialSpecular = "#ffffff";
+
+    this.lineBasicMaterialColor = "#ffffff";
+
+    // initial value
+    this.initialMaterialShininess = 100;
+    this.initialCameraPositionZ = 80;
+
+    this.groupScale = new THREE.Vector3(0.3, 0.3, 0.3);
+
+    this.initialGroupOBJScale = new THREE.Vector3(15, 15, 15);
+    this.initialGroupOBJPosition = new THREE.Vector3(0, 10, 0);
+
+    this.initialGroupGroupScale = new THREE.Vector3(1.0, 1.0, 1.0);
+    this.groupGroupLengthMax = 100;
+    this.groupGroupRadius = 30.0;
+    this.groupGroupChildrenLength = 9;
+
+    this.spherePosition = new THREE.Vector3(0, 25, 0);
+
+    this.jsonLoad = function(){
+      var loader = new THREE.BufferGeometryLoader();
+      loader.load(
+        'model/temp.json',
+
+        // onLoad callback
+        function (jsonGeometry) {
+          var jsonMaterial = new THREE.MeshLambertMaterial( { color: 0xffff00 } );
+          var jsonMesh = new THREE.Mesh(jsonGeometry, jsonMaterial);
+          // jsonMesh.rotateZ(Math.PI / 2.0);
+          scene.add(jsonMesh);
+        },
+
+        // onProgress callback
+        function (xhr) {
+          console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+
+        // onError callback
+        function (err) {
+          console.log('An error happened');
+        }
+      );
+
+    }
+
+    this.showStats = true;
+
+    this.gapBetweenGroupGroup = 10;
+  }
+
+  var settings = new Settings();
+  var scene, camera, renderer;
+  var controls;
+  var group, groupGroup;
+  var mesh;
+  var sphere;
+
+  init();
+  animate();
+
+  function init(){
+    var gui = new dat.GUI();
+
+    // scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
+    group = new THREE.Group();
+    scene.add(group);
+
+    groupGroup = new THREE.Group();
+    scene.add(groupGroup);
+
+    // renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.body.appendChild(renderer.domElement);
+
+    window.addEventListener( 'resize', function () {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize( window.innerWidth, window.innerHeight );
+    }, false );
+
+    // camera
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+    camera.position.z = settings.initialCameraPositionZ;
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);    // - damping
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.25; // default is 0.25
+    controls.zoomSpeed = 0.5; // default is 1
+
+
+
+    var loader = new THREE.BufferGeometryLoader();
+    loader.load(
+      'model/star.json',
+
+      // onLoad callback
+      function (geometry) {
+
+        var loaderDDS = new THREE.DDSLoader();
+        var cubemap = loaderDDS.load( 'texture/Mountains_argb_mip.dds', function (texture) {
+          texture.magFilter = THREE.LinearFilter;
+          texture.minFilter = THREE.LinearFilter;
+          texture.mapping = THREE.CubeReflectionMapping;
+          material.needsUpdate = true;
+        } );
+
+        var material = new THREE.MeshPhongMaterial( {
+          color: settings.materialColor,
+          emissive: settings.materialEmissive,
+          specular: settings.materialSpecular,
+          shininess: settings.materialShininess,
+          envMap: cubemap
+        } );
+
+        mesh = new THREE.Mesh(geometry, material);
+        group.add(mesh);
+
+        var wireframeGeometry = new THREE.WireframeGeometry(geometry);
+        var lineBasicMaterial = new THREE.LineBasicMaterial( { color: settings.lineBasicMaterialColor, transparent: true, opacity: 0.5 } );
+        var lineSegments = new THREE.LineSegments(wireframeGeometry, lineBasicMaterial);
+        group.add(lineSegments);
+        group.scale.set(settings.groupScale.x, settings.groupScale.y, settings.groupScale.z);
+        group.rotateZ(Math.PI / 2.0);
+
+        // - gui
+        var guiFolderGeometry = gui.addFolder('Geometry');
+        guiFolderGeometry.add(settings, 'geometryRaidus', 1, 30).onChange(function(){
+          updateGeometry();
+        })
+        guiFolderGeometry.add(settings, 'geometryDetail', 0, 5).step(1).onChange(function(){
+          updateGeometry();
+        });
+        function updateGeometry(){
+          group.children[0].geometry.dispose(); // Mesh
+          group.children[1].geometry.dispose(); // LineSegments
+
+          var geometry =  new THREE.OctahedronGeometry(settings.geometryRaidus, settings.geometryDetail);
+          group.children[0].geometry = geometry;
+          group.children[1].geometry = new THREE.WireframeGeometry(geometry);
+        }
+        guiFolderGeometry.open();
+
+        var guiFolderMaterial = gui.addFolder('Material');
+        guiFolderMaterial.add(material, 'shininess');
+        guiFolderMaterial.add(material, 'flatShading');
+        guiFolderMaterial.addColor(settings, 'materialColor').onChange(function(color){
+          material.color.setStyle(color);
+        });
+        guiFolderMaterial.addColor(settings, 'materialEmissive').onChange(function(emissive){
+          material.emissive.setStyle(emissive);
+        });
+        guiFolderMaterial.addColor(settings, 'materialSpecular').onChange(function(specular){
+          material.specular.setStyle(specular);
+        });
+
+        var guiFolderLineMaterial = gui.addFolder('Line Material');
+        guiFolderLineMaterial.add(lineBasicMaterial, 'opacity', 0, 1.0);
+        guiFolderLineMaterial.addColor(settings, 'lineBasicMaterialColor').onChange(function(color){
+          lineBasicMaterial.color.setStyle(color);
+        });
+        guiFolderLineMaterial.open();
+
+
+        guiFolderMaterial.open();
+
+        var guiFolderGroup = gui.addFolder('Group');
+        guiFolderGroup.add(group, 'visible');
+        guiFolderGroup.add(group.scale, 'x').name('scale.x').onChange(syncGroupScale);
+        guiFolderGroup.add(group.scale, 'y').name('scale.y').onChange(syncGroupScale);
+        guiFolderGroup.add(group.scale, 'z').name('scale.z').onChange(syncGroupScale);
+        function syncGroupScale(){
+          groupGroup.children.forEach(function(child){
+            child.scale.copy(group.scale);
+          });
+        }
+        guiFolderGroup.open();
+
+        // groupGroup
+        function initiGroupGroup(){
+          var THETA = Math.PI * 2 / settings.groupGroupChildrenLength;
+          for (var i = 0; i < settings.groupGroupChildrenLength; i++){
+            var theta = THETA * i;
+            var groupClone = group.clone();
+            groupClone.visible = true;
+            groupClone.position.x = settings.gapBetweenGroupGroup * i;
+            groupGroup.add(groupClone);
+          }
+          groupGroup.scale.copy(settings.initialGroupGroupScale);
+
+          // centering
+          new THREE.Box3().setFromObject(groupGroup).getCenter(groupGroup.position).multiplyScalar(- 1);
+        }
+
+        function updateGroupGroup(){
+          for (var i = groupGroup.children.length - 1; i >= 0 ; i--){
+            groupGroup.remove(groupGroup.children[i]);
+          }
+          initiGroupGroup();
+        }
+
+        initiGroupGroup();
+
+        // - group
+        var guiFolderGroupGroup = gui.addFolder('groupGroup');
+        guiFolderGroupGroup.add(groupGroup.scale, 'x').name('scale.x');
+        guiFolderGroupGroup.add(groupGroup.scale, 'y').name('scale.y');
+        guiFolderGroupGroup.add(groupGroup.scale, 'z').name('scale.z');
+        guiFolderGroupGroup.add(settings, 'groupGroupChildrenLength', 0, settings.groupGroupLengthMax).name('length').step(1).onChange(updateGroupGroup);
+        guiFolderGroupGroup.add(settings, 'groupGroupRadius', 0, 100).name('radius').onChange(updateGroupGroup);
+        guiFolderGroupGroup.open();
+
+        // light
+        var lights = [];
+        lights[0] = new THREE.PointLight(0xffffff, 1, 0);
+        lights[1] = new THREE.PointLight(0xffffff, 1, 0);
+        lights[2] = new THREE.PointLight(0xffffff, 1, 0);
+
+        lights[0].position.set(0, 200, 0);
+        lights[1].position.set(100, 200, 100);
+        lights[2].position.set(- 100, - 200, - 100);
+
+        scene.add(lights[0]);
+        scene.add(lights[1]);
+        scene.add(lights[2]);
+
+        var guiFolderJSON = gui.addFolder('JSON');
+        guiFolderJSON.add(settings, 'jsonLoad');
+        guiFolderJSON.open();
+
+      },
+
+      // onProgress callback
+      function (xhr) {
+        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+      },
+
+      // onError callback
+      function (err) {
+        console.log('An error happened');
+      }
+    );
+
+
+    // debug
+    var axesHelper = new THREE.AxesHelper(10);
+    scene.add(axesHelper);
+
+    stats = new Stats();
+    stats.showPanel(0);
+    document.getElementById('containerStats').appendChild(stats.dom);
+
+    // - gui
+    var guiFolderDebug = gui.addFolder('Debug');
+    guiFolderDebug.add(axesHelper, 'visible').name('axesHelper.visible');
+    guiFolderDebug.add(settings, 'showStats').onChange(function(enableDebug){
+      if(enableDebug){
+        document.getElementById("containerStats").style.display = "inline";
+      }else{
+        document.getElementById("containerStats").style.display = "none";
+      }
+    });
+    guiFolderDebug.open();
+  }
+
+  function animate() {
+    stats.begin();
+
+    controls.update();
+
+  	renderer.render(scene, camera);
+
+    stats.end();
+
+    requestAnimationFrame(animate);
+  }
+
+  </script>
+</body>
+</html>
