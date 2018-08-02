@@ -44,7 +44,7 @@
     this.initialGroupGroupScale = new THREE.Vector3(1.0, 1.0, 1.0);
     this.groupGroupLengthMax = 100;
     this.groupGroupRadius = 30.0;
-    this.groupGroupChildrenLength = 9;
+    this.groupGroupChildrenLength = 5;
 
     this.spherePosition = new THREE.Vector3(0, 25, 0);
 
@@ -106,6 +106,14 @@
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
+    // clipping
+    var globalClippingPlane = new THREE.Plane( new THREE.Vector3( - 1, 0, 0 ), 0.1 );
+    renderer.clippingPlanes = [globalClippingPlane];
+    // - gui
+    var guiFolderGlobalClippingPlane = gui.addFolder('GlobalClippingPlane');
+    guiFolderGlobalClippingPlane.add(globalClippingPlane, 'constant');
+    guiFolderGlobalClippingPlane.open();
+
     document.body.appendChild(renderer.domElement);
 
     window.addEventListener( 'resize', function () {
