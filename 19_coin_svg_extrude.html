@@ -127,8 +127,7 @@
     // base of coin
     var baseGeometry = new THREE.CylinderGeometry(settings.initialBaseMeshRadiusTop, settings.initialBaseMeshRadiusBottom, settings.initialBaseMeshHeight, 32);
     var baseMaterial = new THREE.MeshPhongMaterial( {
-      color: settings.baseColor,
-      envMap: envMap
+      color: settings.baseColor
     } );
     var baseMesh = new THREE.Mesh(baseGeometry, baseMaterial);
     baseMesh.name = 'baseMesh';
@@ -177,7 +176,6 @@
 
           var material = new THREE.MeshPhongMaterial( {
             color: path.color,
-            envMap: envMap,
             depthWrite: true
           } );
 
@@ -265,20 +263,9 @@
 
     var fiveYenGeometry = new THREE.ExtrudeGeometry(arcShape, extrudeSettingsFiveYen);
     fiveYenGeometry.center();
-    var loaderDDS = new THREE.DDSLoader();
-    var envMap = loaderDDS.load( 'texture/Mountains_argb_mip.dds', function (texture) {
-      texture.magFilter = THREE.LinearFilter;
-      texture.minFilter = THREE.LinearFilter;
-      texture.mapping = THREE.CubeReflectionMapping;
-
-      fiveYenMaterial.needsUpdate = true;
-      baseMaterial.needsUpdate = true;
-      groupSVG.children.forEach(function(mesh){mesh.material.needsUpdate = true;});
-    } );
 
     var fiveYenMaterial = new THREE.MeshPhongMaterial( {
-      color: settings.fiveYenColor,
-      envMap: envMap
+      color: settings.fiveYenColor
     } );
     var fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMaterial);
     fiveYenMesh.name = 'fiveYenMesh';
@@ -324,6 +311,26 @@
       fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMaterial);
       groupCoin.add(fiveYenMesh);
     }
+
+    // env Map
+    var loaderDDS = new THREE.DDSLoader();
+    loaderDDS.load( 'texture/Mountains_argb_mip.dds', function (texture) {
+      texture.magFilter = THREE.LinearFilter;
+      texture.minFilter = THREE.LinearFilter;
+      texture.mapping = THREE.CubeReflectionMapping;
+
+      fiveYenMaterial.envMap = texture;
+      fiveYenMaterial.needsUpdate = true;
+
+      baseMaterial.envMap = texture;
+      baseMaterial.needsUpdate = true;
+
+      groupSVG.children.forEach(function(mesh){
+        mesh.material.envMap = texture;
+        mesh.material.needsUpdate = true;
+      });
+
+    } );
 
     // debug
     var axesHelper = new THREE.AxesHelper(25);
