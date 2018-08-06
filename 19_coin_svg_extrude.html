@@ -329,12 +329,15 @@
     };
 
     var fiveYenGeometry = new THREE.ExtrudeGeometry(arcShape, extrudeSettingsFiveYen);
-    fiveYenGeometry.center();
-
     var fiveYenMaterial = new THREE.MeshPhongMaterial( {
       color: settings.fiveYenColor
     } );
     var fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMaterial);
+
+    fiveYenMesh.position.set(0, 0, 0);
+    new THREE.Box3().setFromObject(fiveYenMesh).getCenter(fiveYenMesh.position).negate();
+
+
     fiveYenMesh.name = 'fiveYenMesh';
     groupCoin.add(fiveYenMesh);
 
@@ -343,9 +346,13 @@
     guiFolderFiveYen.addColor(settings, 'fiveYenColor').onChange(function(color){
       fiveYenMaterial.color.setStyle(color);
     });
-    guiFolderFiveYen.add(fiveYenMesh.scale, 'x').name('scale.x');
-    guiFolderFiveYen.add(fiveYenMesh.scale, 'y').name('scale.y');
-    guiFolderFiveYen.add(fiveYenMesh.scale, 'z').name('scale.z');
+    guiFolderFiveYen.add(fiveYenMesh.scale, 'x').name('scale.x').onChange(fiveYenScaleChanged);
+    guiFolderFiveYen.add(fiveYenMesh.scale, 'y').name('scale.y').onChange(fiveYenScaleChanged);
+    guiFolderFiveYen.add(fiveYenMesh.scale, 'z').name('scale.z').onChange(fiveYenScaleChanged);
+    function fiveYenScaleChanged(){
+      fiveYenMesh.position.set(0, 0, 0);
+      new THREE.Box3().setFromObject(fiveYenMesh).getCenter(fiveYenMesh.position).negate();
+    }
     guiFolderFiveYen.add(settings, 'fiveYenRadiusOut').onChange(updateArcShape);
     guiFolderFiveYen.add(settings, 'fiveYenRadiusIn').onChange(updateArcShape);
     function updateArcShape(){
@@ -374,8 +381,11 @@
       fiveYenMesh.material.dispose();
 
       fiveYenGeometry = new THREE.ExtrudeGeometry(arcShape, extrudeSettingsFiveYen);
-      fiveYenGeometry.center();
       fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMaterial);
+
+      fiveYenMesh.position.set(0, 0, 0)
+      new THREE.Box3().setFromObject(fiveYenMesh).getCenter(fiveYenMesh.position).negate();
+
       groupCoin.add(fiveYenMesh);
     }
 
