@@ -21,6 +21,35 @@
   <script>
 
   var Settings = function(){
+    // JSON
+    this.saveJSON = function(){
+
+      // can't toJSON envMap by DDSLoader so set all envMap to null
+      function setEnvMapNull(group){
+        group.children.forEach(
+          function(child){
+
+            if(child.constructor.name == 'Group'){
+              // do recursively
+              setEnvMapNull(child);
+            }
+
+            else if (child.constructor.name == 'Mesh'){
+              child.material.envMap = null;
+              child.material.needsUpdate = true;
+            }
+
+          }
+        );
+      }
+
+      setEnvMapNull(groupCoin);
+
+      var json = groupCoin.toJSON();
+      localStorage.setItem("json", JSON.stringify(json));
+
+    }
+
     this.geometryRaidus = 5;
     this.geometryDetail = 0;
 
@@ -81,6 +110,7 @@
     guiFolderGroupCoin.add(groupCoin.scale, 'x').name('scale.x');
     guiFolderGroupCoin.add(groupCoin.scale, 'y').name('scale.y');
     guiFolderGroupCoin.add(groupCoin.scale, 'z').name('scale.z');
+    guiFolderGroupCoin.add(settings, 'saveJSON');
 
     groupCoinCenterFront = new THREE.Group();
     groupCoinCenterFront.name = 'groupCoinCenterFront';
