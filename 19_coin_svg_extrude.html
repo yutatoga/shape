@@ -77,6 +77,11 @@
     groupCoin.name = 'groupCoin';
     scene.add(groupCoin);
 
+    var guiFolderGroupCoin = gui.addFolder('Group Coin');
+    guiFolderGroupCoin.add(groupCoin.scale, 'x').name('scale.x');
+    guiFolderGroupCoin.add(groupCoin.scale, 'y').name('scale.y');
+    guiFolderGroupCoin.add(groupCoin.scale, 'z').name('scale.z');
+
     groupCoinCenterFront = new THREE.Group();
     groupCoinCenterFront.name = 'groupCoinCenterFront';
     groupCoin.add(groupCoinCenterFront);
@@ -258,7 +263,7 @@
 
     var extrudeSettingsFiveYen = {
       curveSegments: 256,
-      depth: 2,
+      depth: settings.initialBaseMeshHeight + 2 * extrudeSettingsSVG.depth,
       bevelEnabled: false,
       bevelSegments: 20,
       steps: 1,
