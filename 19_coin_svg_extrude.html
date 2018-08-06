@@ -21,6 +21,9 @@
   <script>
 
   var Settings = function(){
+    // Group Coin
+    this.groupCoinRotationSpeed = new THREE.Vector3(0.005, 0.005, 0);
+
     // JSON
     this.saveJSON = function(){
 
@@ -136,6 +139,9 @@
     guiFolderGroupCoin.add(groupCoin.scale, 'x').name('scale.x');
     guiFolderGroupCoin.add(groupCoin.scale, 'y').name('scale.y');
     guiFolderGroupCoin.add(groupCoin.scale, 'z').name('scale.z');
+    guiFolderGroupCoin.add(settings.groupCoinRotationSpeed, 'x').name('rotation.x').step(0.0001);
+    guiFolderGroupCoin.add(settings.groupCoinRotationSpeed, 'y').name('rotation.y').step(0.0001);
+    guiFolderGroupCoin.add(settings.groupCoinRotationSpeed, 'z').name('rotation.z').step(0.0001);
     guiFolderGroupCoin.add(settings, 'saveJSON');
     guiFolderGroupCoin.add(settings, 'loadJSON');
 
@@ -427,8 +433,9 @@
 
     controls.update();
 
-    groupCoin.rotation.x += 0.005;
-    groupCoin.rotation.y += 0.005;
+    groupCoin.rotation.x += settings.groupCoinRotationSpeed.x;
+    groupCoin.rotation.y += settings.groupCoinRotationSpeed.y;
+    groupCoin.rotation.y += settings.groupCoinRotationSpeed.z;
 
   	renderer.render(scene, camera);
 
