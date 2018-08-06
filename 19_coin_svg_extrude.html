@@ -59,6 +59,7 @@
   var scene, camera, renderer;
   var controls;
   var groupSVG, groupCoin, groupCoinCenterFront, groupCoinCenterBack;
+  var loadedTexture;
   var shapesArray = [];
   var arcShape;
 
@@ -178,6 +179,10 @@
             color: path.color,
             depthWrite: true
           } );
+
+          if(loadedTexture){
+            material.envMap = loadedTexture;
+          }
 
           var shapes = path.toShapes(true, false);
 
@@ -315,18 +320,20 @@
     // env Map
     var loaderDDS = new THREE.DDSLoader();
     loaderDDS.load( 'texture/Mountains_argb_mip.dds', function (texture) {
-      texture.magFilter = THREE.LinearFilter;
-      texture.minFilter = THREE.LinearFilter;
-      texture.mapping = THREE.CubeReflectionMapping;
+      loadedTexture = texture;
 
-      fiveYenMaterial.envMap = texture;
+      loadedTexture.magFilter = THREE.LinearFilter;
+      loadedTexture.minFilter = THREE.LinearFilter;
+      loadedTexture.mapping = THREE.CubeReflectionMapping;
+
+      fiveYenMaterial.envMap = loadedTexture;
       fiveYenMaterial.needsUpdate = true;
 
-      baseMaterial.envMap = texture;
+      baseMaterial.envMap = loadedTexture;
       baseMaterial.needsUpdate = true;
 
       groupSVG.children.forEach(function(mesh){
-        mesh.material.envMap = texture;
+        mesh.material.envMap = loadedTexture;
         mesh.material.needsUpdate = true;
       });
 
