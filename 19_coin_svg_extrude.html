@@ -50,6 +50,31 @@
 
     }
 
+    this.loadJSON = function(){
+      var loader = new THREE.ObjectLoader();
+      loader.load(
+        // resource URL
+        "/model/19.json",
+
+        // onLoad callback
+        // Here the loaded data is assumed to be an object
+        function (obj) {
+          // Add the loaded object to the scene
+          scene.add(obj);
+        },
+
+        // onProgress callback
+        function (xhr) {
+          console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        },
+
+        // onError callback
+        function (err) {
+          console.error('An error happened');
+        }
+      );
+    }
+
     this.geometryRaidus = 5;
     this.geometryDetail = 0;
 
@@ -111,6 +136,7 @@
     guiFolderGroupCoin.add(groupCoin.scale, 'y').name('scale.y');
     guiFolderGroupCoin.add(groupCoin.scale, 'z').name('scale.z');
     guiFolderGroupCoin.add(settings, 'saveJSON');
+    guiFolderGroupCoin.add(settings, 'loadJSON');
 
     groupCoinCenterFront = new THREE.Group();
     groupCoinCenterFront.name = 'groupCoinCenterFront';
