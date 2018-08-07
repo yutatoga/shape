@@ -93,29 +93,80 @@
     // var geometry = new THREE.OctahedronGeometry(settings.geometryRaidus, settings.geometryDetail);
     var geometry = new THREE.CylinderGeometry(5, 5, 0.5, 32);
 
-    var loaderDDS = new THREE.DDSLoader();
-    var cubemap = loaderDDS.load( 'texture/Mountains_argb_mip.dds', function (texture) {
-      texture.magFilter = THREE.LinearFilter;
-      texture.minFilter = THREE.LinearFilter;
-      texture.mapping = THREE.CubeReflectionMapping;
-      material.needsUpdate = true;
-    } );
-
     // var texture= new THREE.SVGLoader().load('texture/logo.svg');
-    var texture = new THREE.TextureLoader().load('texture/logo.png');
+    new THREE.TextureLoader().load('texture/logo.png', function(texture){
+      new THREE.DDSLoader().load( 'texture/Mountains_argb_mip.dds', function (dds) {
+        dds.magFilter = THREE.LinearFilter;
+        dds.minFilter = THREE.LinearFilter;
+        dds.mapping = THREE.CubeReflectionMapping;
 
-    var material = new THREE.MeshPhongMaterial( {
-      color: settings.materialColor,
-      emissive: settings.materialEmissive,
-      specular: settings.materialSpecular,
-      shininess: settings.initialMaterialShininess,
-      map: texture,
-      envMap: cubemap
-    } );
-    mesh = new THREE.Mesh(geometry, material);
-    mesh.rotateX(Math.PI / 2.0);
-    mesh.rotateY(Math.PI / 2.0);    
-    groupCoin.add(mesh);
+        var materialFront = new THREE.MeshPhongMaterial( {
+          color: settings.materialColor,
+          emissive: settings.materialEmissive,
+          specular: settings.materialSpecular,
+          shininess: settings.initialMaterialShininess,
+          map: texture,
+          envMap: dds
+        } );
+
+        var materialBack = materialFront.clone();
+        materialBack.map = materialFront.map.clone();
+        materialBack.map.needsUpdate = true;
+        materialBack.map.center.setScalar(0.5);
+        materialBack.map.rotation = Math.PI;
+
+        var materialSide = undefined;
+
+        mesh = new THREE.Mesh(geometry, [materialSide, materialFront, materialBack]);
+        mesh.rotateX(Math.PI / 2.0);
+        mesh.rotateY(Math.PI / 2.0);
+        groupCoin.add(mesh);
+
+        // gui
+        var guiFolderMaterial = gui.addFolder('Material');
+        guiFolderMaterial.add(settings, 'material').options(settings.materialsOptions).onChange(updateMaterial);
+        function updateMaterial(updateMaterial){
+          switch (updateMaterial) {
+            case 'MeshPhongMaterial':
+              var material = new THREE.MeshPhongMaterial( {
+                color: settings.materialColor,
+                emissive: settings.materialEmissive,
+                specular: settings.materialSpecular,
+                shininess: settings.materialShininess,
+                map: mesh.material.map,
+                envMap: dds
+              } );
+              mesh.material = material;
+              break;
+            case 'MeshBasicMaterial':
+              var material = new THREE.MeshBasicMaterial( {
+                color: 0xffffff,
+                map: mesh.material.map
+              } );
+              mesh.material = material;
+              break;
+            default:
+          }
+        }
+        guiFolderMaterial.add(materialFront, 'shininess');
+        guiFolderMaterial.add(materialFront, 'flatShading');
+        guiFolderMaterial.addColor(settings, 'materialColor').onChange(function(color){
+          material.color.setStyle(color);
+        });
+        guiFolderMaterial.addColor(settings, 'materialEmissive').onChange(function(emissive){
+          material.emissive.setStyle(emissive);
+        });
+        guiFolderMaterial.addColor(settings, 'materialSpecular').onChange(function(specular){
+          material.specular.setStyle(specular);
+        });
+        guiFolderMaterial.open();
+
+
+      } );
+
+    });
+
+
 
     var wireframeGeometry = new THREE.WireframeGeometry(geometry);
     var lineBasicMaterial = new THREE.LineBasicMaterial( { color: settings.lineMaterialColor, transparent: true, opacity: settings.initialLineMaterialOpacity } );
@@ -148,43 +199,7 @@
     }
     guiFolderGeometry.open();
 
-    var guiFolderMaterial = gui.addFolder('Material');
-    guiFolderMaterial.add(settings, 'material').options(settings.materialsOptions).onChange(updateMaterial);
-    function updateMaterial(updateMaterial){
-      switch (updateMaterial) {
-        case 'MeshPhongMaterial':
-          var material = new THREE.MeshPhongMaterial( {
-            color: settings.materialColor,
-            emissive: settings.materialEmissive,
-            specular: settings.materialSpecular,
-            shininess: settings.materialShininess,
-            map: mesh.material.map,
-            envMap: cubemap
-          } );
-          mesh.material = material;
-          break;
-        case 'MeshBasicMaterial':
-          var material = new THREE.MeshBasicMaterial( {
-            color: 0xffffff,
-            map: mesh.material.map
-          } );
-          mesh.material = material;
-          break;
-        default:
-      }
-    }
-    guiFolderMaterial.add(material, 'shininess');
-    guiFolderMaterial.add(material, 'flatShading');
-    guiFolderMaterial.addColor(settings, 'materialColor').onChange(function(color){
-      material.color.setStyle(color);
-    });
-    guiFolderMaterial.addColor(settings, 'materialEmissive').onChange(function(emissive){
-      material.emissive.setStyle(emissive);
-    });
-    guiFolderMaterial.addColor(settings, 'materialSpecular').onChange(function(specular){
-      material.specular.setStyle(specular);
-    });
-    guiFolderMaterial.open();
+
 
 
     var guiFolderGroup = gui.addFolder('groupCoin');
