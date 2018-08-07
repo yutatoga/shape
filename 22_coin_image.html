@@ -307,6 +307,10 @@
     scene.add(lights[2]);
 
     // debug
+    var axesHelper = new THREE.AxesHelper(25);
+    axesHelper.name = 'axesHelper';
+    scene.add(axesHelper);
+
     stats = new Stats();
     stats.showPanel(0);
     document.body.appendChild(stats.dom);
