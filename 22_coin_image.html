@@ -207,8 +207,9 @@
           materialBack.emissive.setStyle(emissive);
         });
         guiFolderMaterial.addColor(settings, 'materialSpecular').onChange(function(specular){
-          materialFront.specular.setStyle(specular);
-          materialBack.specular.setStyle(specular);
+          mesh.material[1].specular.setStyle(specular);
+          mesh.material[2].specular.setStyle(specular);
+          fiveYenMesh.material.specular.setStyle(specular);
         });
         guiFolderMaterial.add(settings, 'materialEnableEnvMap').onChange(function(){
           if(settings.materialEnableEnvMap){
