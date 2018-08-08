@@ -193,7 +193,7 @@
           }
         }
         guiFolderMaterial.add(settings, 'materialShininess', 0, 1000).step(1).onChange(function(){
-          materialFront.shininess = materialBack.shininess = settings.materialShininess;
+          mesh.material[1].shininess = mesh.material[2].shininess = fiveYenMesh.material.shininess = settings.materialShininess;
         });
         guiFolderMaterial.add(settings, 'materialFlatShading').onChange(function(){
           materialFront.flatShading = materialBack.flatShading = settings.materialFlatShading;
