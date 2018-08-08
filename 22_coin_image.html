@@ -287,8 +287,8 @@
       fiveYenMesh.position.set(0, 0, 0);
       new THREE.Box3().setFromObject(fiveYenMesh).getCenter(fiveYenMesh.position).negate().divide(groupCoin.scale);
     }
-    guiFolderFiveYen.add(settings, 'fiveYenRadiusOut').onChange(updateArcShape);
-    guiFolderFiveYen.add(settings, 'fiveYenRadiusIn').onChange(updateArcShape);
+    guiFolderFiveYen.add(settings, 'fiveYenRadiusOut').onChange(updateArcShape).step(0.1);
+    guiFolderFiveYen.add(settings, 'fiveYenRadiusIn').onChange(updateArcShape).step(0.1);
     function updateArcShape(){
       arcShape = new THREE.Shape();
       arcShape.absarc(0, 0, settings.fiveYenRadiusOut, 0, Math.PI * 2, false);
