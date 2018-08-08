@@ -130,18 +130,29 @@
         function updateMaterial(updateMaterial){
           switch (updateMaterial) {
             case 'MeshPhongMaterial':
-              var material = new THREE.MeshPhongMaterial( {
+              var materialSide = undefined;
+              var materialFront = new THREE.MeshPhongMaterial( {
                 color: settings.materialColor,
                 emissive: settings.materialEmissive,
                 specular: settings.materialSpecular,
                 shininess: settings.materialShininess,
-                map: mesh.material.map,
-                envMap: dds
+                flatShading: settings.materialFlatShading,
+                map: mesh.material[1].map,
+                envMap: mesh.material[1].envMap
               } );
-              mesh.material = material;
+              var materialBack = new THREE.MeshPhongMaterial( {
+                color: settings.materialColor,
+                emissive: settings.materialEmissive,
+                specular: settings.materialSpecular,
+                shininess: settings.materialShininess,
+                flatShading: settings.materialFlatShading,
+                map: mesh.material[2].map,
+                envMap: mesh.material[2].envMap
+              } );
+              mesh.material = [materialSide, materialFront, materialBack];;
               break;
             case 'MeshBasicMaterial':
-            var materialSide = undefined;
+              var materialSide = undefined;
               var materialFront = new THREE.MeshBasicMaterial( {
                 map: mesh.material[1].map,
                 envMap: mesh.material[1].envMap
