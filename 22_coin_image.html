@@ -32,6 +32,12 @@
 
     this.lineMaterialColor = "#ffffff";
 
+    // cylinder
+    this.initialCylinderRadiusTop = 5;
+    this.initialCylinderRadiusBottom = 5;
+    this.initialCylinderHeight = 0.5;
+    this.initialCylinderRadialSegments = 32;
+
     // initial value
     this.initialCameraPositionZ = 30;
 
@@ -92,7 +98,7 @@
     controls.zoomSpeed = 0.5; // default is 1
 
     // var geometry = new THREE.OctahedronGeometry(settings.geometryRaidus, settings.geometryDetail);
-    var geometry = new THREE.CylinderGeometry(5, 5, 0.5, 32);
+    var geometry = new THREE.CylinderGeometry(settings.initialCylinderRadiusTop, settings.initialCylinderRadiusBottom, settings.initialCylinderHeight, settings.initialCylinderRadialSegments);
 
     // var texture= new THREE.SVGLoader().load('texture/logo.svg');
     new THREE.TextureLoader().load('texture/logo.png', function(texture){
