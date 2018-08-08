@@ -54,7 +54,6 @@
     this.fiveYenDepth = 1;
     this.fiveYenRadiusOut = 10;
     this.fiveYenRadiusIn = 9;
-    this.fiveYenColor = '#ff0000';
 
   }
   var settings = new Settings();
@@ -222,7 +221,11 @@
 
         var fiveYenGeometry = new THREE.ExtrudeGeometry(arcShape, extrudeSettingsFiveYen);
         var fiveYenMaterial = new THREE.MeshPhongMaterial( {
-          color: settings.fiveYenColor,
+          color: settings.materialColor,
+          emissive: settings.materialEmissive,
+          specular: settings.materialSpecular,
+          shininess: settings.materialShininess,
+          flatShading: settings.materialFlatShading,
           envMap: dds
         } );
         var fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMaterial);
@@ -236,9 +239,6 @@
 
         var guiFolderFiveYen = gui.addFolder('Five Yen');
         guiFolderFiveYen.add(fiveYenMesh, 'visible');
-        guiFolderFiveYen.addColor(settings, 'fiveYenColor').onChange(function(color){
-          fiveYenMaterial.color.setStyle(color);
-        });
         guiFolderFiveYen.add(fiveYenMesh.scale, 'x').name('scale.x').onChange(fiveYenScaleChanged);
         guiFolderFiveYen.add(fiveYenMesh.scale, 'y').name('scale.y').onChange(fiveYenScaleChanged);
         guiFolderFiveYen.add(fiveYenMesh.scale, 'z').name('scale.z').onChange(fiveYenScaleChanged);
