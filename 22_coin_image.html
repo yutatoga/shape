@@ -28,6 +28,7 @@
     this.materialSpecular = "#ffffff";
     this.materialShininess = 100;
     this.materialFlatShading = false;
+    this.materialEnableEnvMap = true;
 
     this.lineMaterialColor = "#ffffff";
 
@@ -171,6 +172,15 @@
         guiFolderMaterial.addColor(settings, 'materialSpecular').onChange(function(specular){
           materialFront.specular.setStyle(specular);
           materialBack.specular.setStyle(specular);
+        });
+        guiFolderMaterial.add(settings, 'materialEnableEnvMap').onChange(function(){
+          if(settings.materialEnableEnvMap){
+            mesh.material[1].envMap = mesh.material[2].envMap = dds;
+            mesh.material[1].needsUpdate = mesh.material[2].needsUpdate = true;
+          } else{
+            mesh.material[1].envMap = mesh.material[2].envMap = null;
+            mesh.material[1].needsUpdate = mesh.material[2].needsUpdate = true;
+          }
         });
         guiFolderMaterial.open();
 
