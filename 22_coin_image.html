@@ -192,11 +192,11 @@
         });
         guiFolderMaterial.add(settings, 'materialEnableEnvMap').onChange(function(){
           if(settings.materialEnableEnvMap){
-            mesh.material[1].envMap = mesh.material[2].envMap = dds;
-            mesh.material[1].needsUpdate = mesh.material[2].needsUpdate = true;
+            mesh.material[1].envMap = mesh.material[2].envMap = fiveYenMesh.material.envMap = dds;
+            mesh.material[1].needsUpdate = mesh.material[2].needsUpdate = fiveYenMesh.material.needsUpdate = true;
           } else{
-            mesh.material[1].envMap = mesh.material[2].envMap = null;
-            mesh.material[1].needsUpdate = mesh.material[2].needsUpdate = true;
+            mesh.material[1].envMap = mesh.material[2].envMap = fiveYenMesh.material.envMap = null;
+            mesh.material[1].needsUpdate = mesh.material[2].needsUpdate = fiveYenMesh.material.needsUpdate = true;
           }
         });
         guiFolderMaterial.open();
