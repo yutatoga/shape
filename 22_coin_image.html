@@ -199,8 +199,9 @@
           materialFront.flatShading = materialBack.flatShading = settings.materialFlatShading;
         });
         guiFolderMaterial.addColor(settings, 'materialColor').onChange(function(color){
-          materialFront.color.setStyle(color);
-          materialBack.color.setStyle(color);
+          mesh.material[1].color.setStyle(color);
+          mesh.material[2].color.setStyle(color);
+          fiveYenMesh.material.color.setStyle(color);
         });
         guiFolderMaterial.addColor(settings, 'materialEmissive').onChange(function(emissive){
           mesh.material[1].emissive.setStyle(emissive);
