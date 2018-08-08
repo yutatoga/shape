@@ -157,6 +157,7 @@
               mesh.material = [materialSide, materialFront, materialBack];;
               break;
             case 'MeshBasicMaterial':
+              // cylinder
               var materialSide = undefined;
               var materialFront = new THREE.MeshBasicMaterial( {
                 map: mesh.material[1].map,
@@ -167,6 +168,13 @@
                 envMap: mesh.material[1].envMap
               } );
               mesh.material = [materialSide, materialFront, materialBack];
+
+              // five yen
+              var materialFiveYen = new THREE.MeshBasicMaterial( {
+                envMap: fiveYenMesh.material.envMap
+              } );
+              fiveYenMesh.material = materialFiveYen;
+
               break;
             default:
           }
