@@ -140,11 +140,14 @@
               mesh.material = material;
               break;
             case 'MeshBasicMaterial':
-              var material = new THREE.MeshBasicMaterial( {
-                color: 0xffffff,
-                map: mesh.material.map
+            var materialSide = undefined;
+              var materialFront = new THREE.MeshBasicMaterial( {
+                map: mesh.material[1].map
               } );
-              mesh.material = material;
+              var materialBack = new THREE.MeshBasicMaterial( {
+                map: mesh.material[2].map
+              } );
+              mesh.material = [materialSide, materialFront, materialBack];
               break;
             default:
           }
