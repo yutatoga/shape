@@ -142,10 +142,12 @@
             case 'MeshBasicMaterial':
             var materialSide = undefined;
               var materialFront = new THREE.MeshBasicMaterial( {
-                map: mesh.material[1].map
+                map: mesh.material[1].map,
+                envMap: mesh.material[1].envMap
               } );
               var materialBack = new THREE.MeshBasicMaterial( {
-                map: mesh.material[2].map
+                map: mesh.material[2].map,
+                envMap: mesh.material[1].envMap
               } );
               mesh.material = [materialSide, materialFront, materialBack];
               break;
