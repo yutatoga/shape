@@ -26,12 +26,12 @@
     this.materialColor =    "#ffaa00";
     this.materialEmissive = "#111111";
     this.materialSpecular = "#ffffff";
-    this.initialMaterialShininess = 100;
+    this.materialShininess = 100;
+    this.materialFlatShading = false;
 
     this.lineMaterialColor = "#ffffff";
 
     // initial value
-    this.initialMaterialShininess = 100;
     this.initialCameraPositionZ = 30;
 
     this.initialLineMaterialOpacity = 0.0;
@@ -104,7 +104,8 @@
           color: settings.materialColor,
           emissive: settings.materialEmissive,
           specular: settings.materialSpecular,
-          shininess: settings.initialMaterialShininess,
+          shininess: settings.materialShininess,
+          flatShading: settings.materialFlatShading,
           map: texture,
           envMap: dds
         } );
@@ -148,16 +149,23 @@
             default:
           }
         }
-        guiFolderMaterial.add(materialFront, 'shininess');
-        guiFolderMaterial.add(materialFront, 'flatShading');
+        guiFolderMaterial.add(settings, 'materialShininess', 0, 1000).step(1).onChange(function(){
+          materialFront.shininess = materialBack.shininess = settings.materialShininess;
+        });
+        guiFolderMaterial.add(settings, 'materialFlatShading').onChange(function(){
+          materialFront.flatShading = materialBack.flatShading = settings.materialFlatShading;
+        });
         guiFolderMaterial.addColor(settings, 'materialColor').onChange(function(color){
-          material.color.setStyle(color);
+          materialFront.color.setStyle(color);
+          materialBack.color.setStyle(color);
         });
         guiFolderMaterial.addColor(settings, 'materialEmissive').onChange(function(emissive){
-          material.emissive.setStyle(emissive);
+          materialFront.emissive.setStyle(emissive);
+          materialBack.emissive.setStyle(emissive);
         });
         guiFolderMaterial.addColor(settings, 'materialSpecular').onChange(function(specular){
-          material.specular.setStyle(specular);
+          materialFront.specular.setStyle(specular);
+          materialBack.specular.setStyle(specular);
         });
         guiFolderMaterial.open();
 
