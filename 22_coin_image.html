@@ -135,6 +135,7 @@
         function updateMaterial(updateMaterial){
           switch (updateMaterial) {
             case 'MeshPhongMaterial':
+              // cylinder
               var materialSide = undefined;
               var materialFront = new THREE.MeshPhongMaterial( {
                 color: settings.materialColor,
@@ -155,6 +156,18 @@
                 envMap: mesh.material[2].envMap
               } );
               mesh.material = [materialSide, materialFront, materialBack];;
+
+              // five yen
+              var materialFiveYen = new THREE.MeshPhongMaterial( {
+                color: settings.materialColor,
+                emissive: settings.materialEmissive,
+                specular: settings.materialSpecular,
+                shininess: settings.materialShininess,
+                flatShading: settings.materialFlatShading,
+                envMap: fiveYenMesh.material.envMap
+              } );
+              fiveYenMesh.material = materialFiveYen;
+
               break;
             case 'MeshBasicMaterial':
               // cylinder
