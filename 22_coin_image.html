@@ -298,7 +298,7 @@
           fiveYenMesh.material.dispose();
 
           fiveYenGeometry = new THREE.ExtrudeGeometry(arcShape, extrudeSettingsFiveYen);
-          fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMaterial);
+          fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMesh.material);
 
           fiveYenMesh.position.set(0, 0, 0)
           new THREE.Box3().setFromObject(fiveYenMesh).getCenter(fiveYenMesh.position).negate();
