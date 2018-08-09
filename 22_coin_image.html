@@ -173,10 +173,12 @@
               // cylinder
               var materialSide = undefined;
               var materialFront = new THREE.MeshBasicMaterial( {
+                color: settings.materialColor,
                 map: mesh.material[1].map,
                 envMap: mesh.material[1].envMap
               } );
               var materialBack = new THREE.MeshBasicMaterial( {
+                color: settings.materialColor,
                 map: mesh.material[2].map,
                 envMap: mesh.material[1].envMap
               } );
@@ -184,6 +186,7 @@
 
               // five yen
               var materialFiveYen = new THREE.MeshBasicMaterial( {
+                color: settings.materialColor,
                 envMap: fiveYenMesh.material.envMap
               } );
               fiveYenMesh.material = materialFiveYen;
