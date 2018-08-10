@@ -51,6 +51,7 @@
     this.materialsOptions = [this.material, 'MeshBasicMaterial'];
 
     // five yen
+    this.fiveYenBevelEnabled = false;
     this.fiveYenDepth = 1;
     this.fiveYenRadiusOut = 10;
     this.fiveYenRadiusIn = 9;
@@ -192,15 +193,25 @@
               mesh.material = [materialSide, materialFront, materialBack];;
 
               // five yen
-              var materialFiveYen = new THREE.MeshPhongMaterial( {
+              var materialFiveYenFrontAndBack = new THREE.MeshPhongMaterial( {
                 color: settings.materialColor,
                 emissive: settings.materialEmissive,
                 specular: settings.materialSpecular,
                 shininess: settings.materialShininess,
-                flatShading: settings.materialFlatShading,
-                envMap: fiveYenMesh.material.envMap
+                flatShading: true,
+                envMap: fiveYenMesh.material[0].envMap
               } );
-              fiveYenMesh.material = materialFiveYen;
+
+              var materialFiveYenSide = new THREE.MeshPhongMaterial( {
+                color: settings.materialColor,
+                emissive: settings.materialEmissive,
+                specular: settings.materialSpecular,
+                shininess: settings.materialShininess,
+                flatShading: false,
+                envMap: fiveYenMesh.material[1].envMap
+              } );
+
+              fiveYenMesh.material = [materialFiveYenFrontAndBack, materialFiveYenSide];
 
               break;
             case 'MeshBasicMaterial':
@@ -214,16 +225,24 @@
               var materialBack = new THREE.MeshBasicMaterial( {
                 color: settings.materialColor,
                 map: mesh.material[2].map,
-                envMap: mesh.material[1].envMap
+                envMap: mesh.material[2].envMap
               } );
               mesh.material = [materialSide, materialFront, materialBack];
 
               // five yen
-              var materialFiveYen = new THREE.MeshBasicMaterial( {
+              var materialFiveYenFrontAndBack = new THREE.MeshBasicMaterial( {
                 color: settings.materialColor,
-                envMap: fiveYenMesh.material.envMap
+                envMap: fiveYenMesh.material[0].envMap,
+                flatShading: true
               } );
-              fiveYenMesh.material = materialFiveYen;
+
+              var materialFiveYenSide = new THREE.MeshBasicMaterial( {
+                color: settings.materialColor,
+                envMap: fiveYenMesh.material[1].envMap,
+                flatShading: false
+              } );
+
+              fiveYenMesh.material = [materialFiveYenFrontAndBack, materialFiveYenSide];
 
               break;
             default:
@@ -252,11 +271,11 @@
         });
         guiFolderMaterial.add(settings, 'materialEnableEnvMap').onChange(function(){
           if(settings.materialEnableEnvMap){
-            mesh.material[1].envMap = mesh.material[2].envMap = fiveYenMesh.material.envMap = dds;
-            mesh.material[1].needsUpdate = mesh.material[2].needsUpdate = fiveYenMesh.material.needsUpdate = true;
+            mesh.material[1].envMap = mesh.material[2].envMap = fiveYenMesh.material[0].envMap = fiveYenMesh.material[1].envMap = dds;
+            mesh.material[1].needsUpdate = mesh.material[2].needsUpdate = fiveYenMesh.material[0].needsUpdate = fiveYenMesh.material[1].needsUpdate = true;
           } else{
-            mesh.material[1].envMap = mesh.material[2].envMap = fiveYenMesh.material.envMap = null;
-            mesh.material[1].needsUpdate = mesh.material[2].needsUpdate = fiveYenMesh.material.needsUpdate = true;
+            mesh.material[1].envMap = mesh.material[2].envMap = fiveYenMesh.material[0].envMap = fiveYenMesh.material[1].envMap = null;
+            mesh.material[1].needsUpdate = mesh.material[2].needsUpdate = fiveYenMesh.material[0].needsUpdate = fiveYenMesh.material[1].needsUpdate = true;
           }
         });
         guiFolderMaterial.open();
@@ -268,9 +287,9 @@
         arcShape.holes.push(holePath);
 
         var extrudeSettingsFiveYen = {
-          curveSegments: 256,
+          curveSegments: 32,
           depth: settings.fiveYenDepth,
-          bevelEnabled: false,
+          bevelEnabled: settings.fiveYenBevelEnabled,
           bevelSegments: 20,
           steps: 1,
           bevelSize: 1,
@@ -278,15 +297,32 @@
         };
 
         var fiveYenGeometry = new THREE.ExtrudeGeometry(arcShape, extrudeSettingsFiveYen);
-        var fiveYenMaterial = new THREE.MeshPhongMaterial( {
+        fiveYenGeometry.computeVertexNormals();
+        if(!settings.fiveYenBevelEnabled){
+          for (var i = 0; i < fiveYenGeometry.faces.length; i++) {
+            var face = fiveYenGeometry.faces[i];
+            if (face.materialIndex == 1) {
+              for (var j = 0; j < face.vertexNormals.length; j++) {
+                face.vertexNormals[j].z = 0;
+                face.vertexNormals[j].normalize();
+              }
+            }
+          }
+        }
+
+        var fiveYenMaterialFrontAndBack = new THREE.MeshPhongMaterial( {
           color: settings.materialColor,
           emissive: settings.materialEmissive,
           specular: settings.materialSpecular,
           shininess: settings.materialShininess,
-          flatShading: settings.materialFlatShading,
+          flatShading: true,
           envMap: dds
         } );
-        var fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMaterial);
+
+        var fiveYenMaterialSide = fiveYenMaterialFrontAndBack.clone();
+        fiveYenMaterialSide.flatShading = false;
+
+        var fiveYenMesh = new THREE.Mesh(fiveYenGeometry, [fiveYenMaterialFrontAndBack, fiveYenMaterialSide]);
 
         fiveYenMesh.position.set(0, 0, 0);
         new THREE.Box3().setFromObject(fiveYenMesh).getCenter(fiveYenMesh.position).negate();
@@ -326,9 +362,23 @@
         function updateFiveYenMesh(){
           groupCoin.remove(fiveYenMesh);
           fiveYenMesh.geometry.dispose();
-          fiveYenMesh.material.dispose();
+          fiveYenMesh.material[0].dispose();
+          fiveYenMesh.material[1].dispose();
 
           fiveYenGeometry = new THREE.ExtrudeGeometry(arcShape, extrudeSettingsFiveYen);
+          fiveYenGeometry.computeVertexNormals();
+          if(!settings.fiveYenBevelEnabled){
+            for (var i = 0; i < fiveYenGeometry.faces.length; i++) {
+              var face = fiveYenGeometry.faces[i];
+              if (face.materialIndex == 1) {
+                for (var j = 0; j < face.vertexNormals.length; j++) {
+                  face.vertexNormals[j].z = 0;
+                  face.vertexNormals[j].normalize();
+                }
+              }
+            }
+          }
+
           fiveYenMesh = new THREE.Mesh(fiveYenGeometry, fiveYenMesh.material);
 
           fiveYenMesh.position.set(0, 0, 0)
