@@ -56,6 +56,40 @@
     this.fiveYenRadiusIn = 9;
 
   }
+
+  function createBezierCircle(cx,cy,r){
+    var shape = new THREE.Shape();
+
+    var c = 0.5522847498307933984022516322796;
+
+    shape.moveTo(cx,cy - r); // translate to centerpoint
+    shape.bezierCurveTo(
+      c*r,-r,
+      r,-c*r,
+      r,0
+    );
+    shape.moveTo(r,0);
+    shape.bezierCurveTo(
+      r,c*r,
+      c*r,r,
+      0,r
+    );
+    shape.moveTo(0,r);
+    shape.bezierCurveTo(
+      -c*r,r,
+      -r,c*r,
+      -r,0
+    );
+    shape.moveTo(-r,0);
+    shape.bezierCurveTo(
+      -r,-c*r,
+      -c*r,-r,
+      0,-r
+    );
+
+    return shape;
+  }
+
   var settings = new Settings();
   var scene, camera, renderer;
   var controls;
@@ -229,11 +263,8 @@
 
 
         // five yen (outline of coin)
-        arcShape = new THREE.Shape();
-        arcShape.absarc(0, 0, settings.fiveYenRadiusOut, 0, Math.PI * 2, false);
-
-        var holePath = new THREE.Path();
-        holePath.absarc(0, 0, settings.fiveYenRadiusIn, 0, Math.PI * 2, true);
+        arcShape = createBezierCircle(0, 0, settings.fiveYenRadiusOut);
+        var holePath = createBezierCircle(0, 0, settings.fiveYenRadiusIn);
         arcShape.holes.push(holePath);
 
         var extrudeSettingsFiveYen = {
@@ -276,11 +307,8 @@
         guiFolderFiveYen.add(settings, 'fiveYenRadiusOut').onChange(updateArcShape).step(0.1);
         guiFolderFiveYen.add(settings, 'fiveYenRadiusIn').onChange(updateArcShape).step(0.1);
         function updateArcShape(){
-          arcShape = new THREE.Shape();
-          arcShape.absarc(0, 0, settings.fiveYenRadiusOut, 0, Math.PI * 2, false);
-
-          var holePath = new THREE.Path();
-          holePath.absarc(0, 0, settings.fiveYenRadiusIn, 0, Math.PI * 2, true);
+          arcShape = createBezierCircle(0, 0, settings.fiveYenRadiusOut);
+          var holePath = createBezierCircle(0, 0, settings.fiveYenRadiusIn);
           arcShape.holes.push(holePath);
 
           updateFiveYenMesh();
