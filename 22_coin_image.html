@@ -62,6 +62,9 @@
 
     // groupCoin
     this.groupCoinRotationSpeed = new THREE.Vector3(0, 0, 0);
+
+    // debug
+    this.showDebugView = true;
   }
 
   function createBezierCircle(cx,cy,r){
@@ -449,7 +452,13 @@
     // debug
     var axesHelper = new THREE.AxesHelper(25);
     axesHelper.name = 'axesHelper';
+    axesHelper.visible = settings.showDebugView;
     scene.add(axesHelper);
+
+    var guiFolderDebug = gui.addFolder('Debug');
+    guiFolderDebug.add(settings, 'showDebugView').onChange(function(){
+      axesHelper.visible = settings.showDebugView;
+    });
 
     stats = new Stats();
     stats.showPanel(0);
