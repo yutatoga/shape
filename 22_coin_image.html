@@ -43,6 +43,10 @@
 
     this.initialLineMaterialOpacity = 0.0;
 
+    this.initialBaseMeshScaleX = 2.0;
+    this.initialBaseMeshScaleY = 0.75;
+    this.initialBaseMeshScaleZ = 2.0;
+
     this.initialGroupScaleX = 1.2;
     this.initialGroupScaleY = 1.2;
     this.initialGroupScaleZ = 1.2;
@@ -163,6 +167,12 @@
         mesh = new THREE.Mesh(geometry, [materialSide, materialFront, materialBack]);
         mesh.rotateX(Math.PI / 2.0);
         mesh.rotateY(Math.PI / 2.0);
+        mesh.scale.set(settings.initialBaseMeshScaleX, settings.initialBaseMeshScaleY, settings.initialBaseMeshScaleZ);
+        var guiFolderMesh = gui.addFolder('Base Mesh');
+        guiFolderMesh.add(mesh.scale, 'x');
+        guiFolderMesh.add(mesh.scale, 'y');
+        guiFolderMesh.add(mesh.scale, 'z');
+
         groupCoin.add(mesh);
 
         // gui
