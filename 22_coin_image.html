@@ -12,6 +12,8 @@
   </style>
 </head>
 <body>
+  <div id='stats'></div>
+
   <script type="text/javascript" src="/js/three.js"></script>
   <script type="text/javascript" src="/js/dat.gui.js"></script>
   <script type="text/javascript" src="/js/OrbitControls.js"></script>
@@ -105,6 +107,7 @@
   var controls;
   var groupCoin;
   var mesh;
+  var stats;
 
   init();
   animate();
@@ -458,11 +461,12 @@
     var guiFolderDebug = gui.addFolder('Debug');
     guiFolderDebug.add(settings, 'showDebugView').onChange(function(){
       axesHelper.visible = settings.showDebugView;
+      document.getElementById('stats').style.display = settings.showDebugView ? 'block' : 'none';
     });
 
     stats = new Stats();
     stats.showPanel(0);
-    document.body.appendChild(stats.dom);
+    document.getElementById('stats').appendChild(stats.dom);
 
   }
 
