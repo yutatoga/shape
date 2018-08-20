@@ -133,7 +133,6 @@
     controls.dampingFactor = 0.25; // default is 0.25
     controls.zoomSpeed = 0.5; // default is 1
 
-    // var geometry = new THREE.OctahedronGeometry(settings.geometryRaidus, settings.geometryDetail);
     var geometry = new THREE.CylinderGeometry(settings.initialCylinderRadiusTop, settings.initialCylinderRadiusBottom, settings.initialCylinderHeight, settings.initialCylinderRadialSegments);
 
     // var texture= new THREE.SVGLoader().load('texture/logo.svg');
@@ -409,26 +408,6 @@
     guiFolderLineMaterial.open();
 
     groupCoin.scale.set(settings.initialGroupScaleX, settings.initialGroupScaleY, settings.initialGroupScaleZ);
-
-    var guiFolderGeometry = gui.addFolder('Geometry');
-    guiFolderGeometry.add(settings, 'geometryRaidus', 1, 30).onChange(function(){
-      updateGeometry();
-    })
-    guiFolderGeometry.add(settings, 'geometryDetail', 0, 5).step(1).onChange(function(){
-      updateGeometry();
-    });
-    function updateGeometry(){
-      groupCoin.children[0].geometry.dispose(); // Mesh
-      groupCoin.children[1].geometry.dispose(); // LineSegments
-
-      var geometry =  new THREE.OctahedronGeometry(settings.geometryRaidus, settings.geometryDetail);
-      groupCoin.children[0].geometry = geometry;
-      groupCoin.children[1].geometry = new THREE.WireframeGeometry(geometry);
-    }
-    guiFolderGeometry.open();
-
-
-
 
     var guiFolderGroup = gui.addFolder('groupCoin');
     // - scale
