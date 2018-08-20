@@ -56,6 +56,8 @@
     this.fiveYenRadiusOut = 10;
     this.fiveYenRadiusIn = 9;
 
+    // groupCoin
+    this.groupCoinRotationSpeed = new THREE.Vector3(0, 0, 0);
   }
 
   function createBezierCircle(cx,cy,r){
@@ -429,16 +431,16 @@
 
 
     var guiFolderGroup = gui.addFolder('groupCoin');
+    // - scale
     guiFolderGroup.add(groupCoin.scale, 'x').name('scale.x');
     guiFolderGroup.add(groupCoin.scale, 'y').name('scale.y');
     guiFolderGroup.add(groupCoin.scale, 'z').name('scale.z');
+    // - rotation
+    guiFolderGroup.add(settings.groupCoinRotationSpeed, 'x').name('rotation.x').step(0.001);
+    guiFolderGroup.add(settings.groupCoinRotationSpeed, 'y').name('rotation.y').step(0.001);
+    guiFolderGroup.add(settings.groupCoinRotationSpeed, 'z').name('rotation.z').step(0.001);
+
     guiFolderGroup.open();
-
-
-
-
-
-
 
 
     // light
@@ -471,8 +473,9 @@
 
     controls.update();
 
-    // groupCoin.rotation.x += 0.005;
-    // groupCoin.rotation.y += 0.005;
+    groupCoin.rotation.x += settings.groupCoinRotationSpeed.x;
+    groupCoin.rotation.y += settings.groupCoinRotationSpeed.y;
+    groupCoin.rotation.z += settings.groupCoinRotationSpeed.z;
 
   	renderer.render(scene, camera);
 
