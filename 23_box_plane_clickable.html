@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>shader</title>
+  <style>
+  body {
+    margin: 0;
+    overflow: hidden;
+  }
+  </style>
+</head>
+
+<body>
+  <div id="container"></div>
+
+  <script src="/js/three.js"></script>
+  <script src="/js/dat.gui.js"></script>
+  <script src="/js/stats.js"></script>
+
+  <script>
+  var container;
+  var camera, scene, renderer;
+  var clock, gui, stats;
+  var meshBox, meshPlane;
+  var raycaster;
+
+  var settings = {
+    renderer: {
+      antialias: true
+    },
+    camera: {
+      fov: 60,
+      near: 1,
+      far: 1000,
+      position: {
+        z: 10
+      }
+    },
+    meshBox: {
+      position: new THREE.Vector3(-1.5, 0, 0),
+      rotationSpeed:{
+        x: 0.005,
+        y: 0.005
+      },
+      material: {
+        color: 0xffffff,
+        opacity: 0.5
+      }
+    },
+    meshPlane: {
+      position: new THREE.Vector3(1.5, 0, 0),
+      rotationSpeed:{
+        x: 0.005,
+        y: 0.005
+      },
+      material: {
+        color: 0xffff00,
+        opacity: 0.5
+      }
+    },
+    light: {
+      ambientLight: {
+        color: 0x404040,
+        intensity: 1.0
+      },
+      pointLight: {
+        color: 0xffffff,
+        intensity: 1.0
+      }
+    }
+  }
+
+  init();
+  animate();
+
+  function init() {
+
+    // renderer
+    renderer = new THREE.WebGLRenderer({antialias: settings.renderer.antialias});
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container = document.getElementById('container');
+    container.appendChild(renderer.domElement);
+
+    // scene
+    scene = new THREE.Scene();
+
+    // camera
+    camera = new THREE.PerspectiveCamera(settings.camera.fov, window.innerWidth / window.innerHeight, settings.camera.near, settings.camera.far);
+    camera.position.z = settings.camera.position.z;
+    scene.add(camera);
+
+    // raycaster
+    raycaster = new THREE.Raycaster();
+
+    // light
+    scene.add(new THREE.AmbientLight(settings.light.ambientLight.color, settings.light.ambientLight.intensity));
+    pointLight = new THREE.PointLight(settings.light.pointLight.color, settings.light.pointLight.intensity);
+    camera.add(pointLight);
+
+    // objects
+    var geometryBox = new THREE.BoxGeometry();
+    var materialBox = new THREE.MeshPhongMaterial({
+      color: settings.meshBox.material.color,
+      opacity: settings.meshBox.material.opacity
+    });
+    meshBox = new THREE.Mesh(geometryBox, materialBox);
+    meshBox.position.copy(settings.meshBox.position);
+    scene.add(meshBox);
+
+    var geometryPlane = new THREE.PlaneGeometry();
+    var materialPlane = new THREE.MeshPhongMaterial( {
+      color: settings.meshPlane.material.color,
+      side: THREE.DoubleSide,
+      opacity: settings.meshPlane.material.opacity
+    } );
+    meshPlane = new THREE.Mesh(geometryPlane, materialPlane);
+    meshPlane.position.copy(settings.meshPlane.position);
+    scene.add(meshPlane);
+
+    // utils
+    clock = new THREE.Clock();
+    gui = new dat.GUI();
+    stats = new Stats();
+    document.body.appendChild(stats.dom);
+
+    // events
+    document.addEventListener('mousedown', onDocumentMouseDown, false);
+
+    // window
+    onWindowResize();
+    window.addEventListener('resize', onWindowResize, false);
+
+  }
+
+  function onWindowResize(event) {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  }
+
+  function onDocumentMouseDown(event){
+    var mouse = new THREE.Vector2(
+      ( event.clientX / window.innerWidth ) * 2 - 1,
+      - ( event.clientY / window.innerHeight ) * 2 + 1
+    );
+    raycaster.setFromCamera(mouse, camera);
+
+    var intersects = raycaster.intersectObjects([meshBox, meshPlane]);
+    if (intersects.length > 0) {
+      intersects[0].object.material.transparent = !(intersects[0].object.material.transparent);
+    }
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    stats.update();
+
+    renderer.render(scene, camera);
+
+    meshBox.rotation.x += settings.meshBox.rotationSpeed.x;
+    meshBox.rotation.y += settings.meshBox.rotationSpeed.y;
+
+    meshPlane.rotation.x += settings.meshPlane.rotationSpeed.x;
+    meshPlane.rotation.y += settings.meshPlane.rotationSpeed.y;
+
+  }
+
+  </script>
+</body>
+</html>
